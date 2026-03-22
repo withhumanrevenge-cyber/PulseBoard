@@ -19,11 +19,6 @@ export const metadata: Metadata = {
   description: "Ditch the manual stats. Sync your GitHub, Stripe, and Vercel velocity directly to a stunning public dashboard. Transparency as a Service.",
   keywords: ["build in public", "startup metrics", "live dashboard", "GitHub stats", "shipping velocity"],
   authors: [{ name: "PulseBoard Team" }],
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
-  ],
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -49,6 +44,16 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0c" },
+  ],
 };
 
 export default function RootLayout({
