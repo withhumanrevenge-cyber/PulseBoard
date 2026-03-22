@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PulseBoard | High-Velocity Startup Metrics",
+  title: "PulseBoard | Public Metrics Engine",
   description: "Ditch the manual stats. Sync your GitHub, Stripe, and Vercel velocity directly to a stunning public dashboard. Transparency as a Service.",
   keywords: ["build in public", "startup metrics", "live dashboard", "GitHub stats", "shipping velocity"],
   authors: [{ name: "PulseBoard Team" }],

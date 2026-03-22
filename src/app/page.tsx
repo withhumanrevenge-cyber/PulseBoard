@@ -93,7 +93,7 @@ export default function Home() {
             className="text-6xl md:text-[7.5rem] font-black tracking-tight leading-[0.85] mb-8"
           >
             THE LIVE <br />
-            <span className="text-gradient">STARTUP PULSE</span>
+            <span className="text-gradient">PULSEBOARD</span>
           </motion.h1>
           
           <motion.p 
