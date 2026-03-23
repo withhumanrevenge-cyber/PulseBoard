@@ -2,7 +2,7 @@
 
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { ArrowRight, Activity, Github, BarChart3, Zap, Globe, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Activity, Github, Zap, Globe, Shield, Sparkles, IndianRupee, Search } from "lucide-react";
 import { PulseLogo } from "@/components/pulse-logo";
 import { motion, Variants } from "framer-motion";
 
@@ -109,32 +109,50 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-5"
+            className="flex flex-col items-center gap-6 w-full max-w-lg mx-auto"
           >
-            {isLoaded && !isSignedIn && (
-              <SignInButton mode="modal">
-                <button className="group relative h-14 px-10 rounded-full bg-primary text-primary-foreground font-bold shadow-2xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                  <span className="flex items-center gap-2">
-                    Claim your handle <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </button>
-              </SignInButton>
-            )}
-            {isLoaded && isSignedIn && (
-              <Link href="/dashboard" className="group relative h-14 px-10 flex items-center justify-center rounded-full bg-primary text-primary-foreground font-bold shadow-2xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                <span className="flex items-center gap-2">
-                  Go to Console <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Link>
-            )}
-            <Link
-              href="/explore"
-              className="h-14 px-10 flex items-center justify-center rounded-full glass border border-border/50 font-bold hover:bg-secondary/80 transition-all hover:scale-105"
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const input = form.elements.namedItem('username') as HTMLInputElement;
+                if (input.value) window.location.href = `/u/${input.value}`;
+              }}
+              className="flex items-center w-full glass border border-border/50 rounded-full p-2 pl-6 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all font-medium shadow-2xl shadow-primary/5"
             >
-              Explore the Network
-            </Link>
+              <span className="text-muted-foreground/60 tracking-tight font-bold hidden sm:inline">pulseboard.dev/u/</span>
+              <input 
+                type="text" 
+                name="username"
+                placeholder="github_handle" 
+                className="bg-transparent border-none outline-none flex-1 font-black placeholder:text-muted-foreground/30 text-foreground ml-2 sm:ml-0"
+                required
+              />
+              <button type="submit" className="group flex items-center justify-center px-6 py-3 rounded-full bg-foreground text-background font-bold tracking-tight hover:scale-105 active:scale-95 transition-all gap-2">
+                Launch <Search className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </form>
+            
+            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 mt-4">
+              {isLoaded && !isSignedIn && (
+                <SignInButton mode="modal">
+                  <button className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors group">
+                    <Github className="w-4 h-4" />
+                    <span>Connect your GitHub</span>
+                  </button>
+                </SignInButton>
+              )}
+              {isLoaded && isSignedIn && (
+                <Link href="/dashboard" className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+                  <Activity className="w-4 h-4" />
+                  <span>Go to Console</span>
+                </Link>
+              )}
+              <Link href="/explore" className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors group border-l border-border/50 pl-6">
+                <Globe className="w-4 h-4" />
+                <span>Explore Network</span>
+              </Link>
+            </div>
           </motion.div>
         </section>
 
@@ -159,9 +177,9 @@ export default function Home() {
                 <h3 className="text-3xl font-bold tracking-tight mb-4">GitHub Real-time Pulse</h3>
                 <p className="text-muted-foreground text-lg max-w-md font-medium">Your commit history, language distribution, and shipping velocity synced automatically. Turn your activity into authority.</p>
               </div>
-              <div className="flex gap-4 mt-8">
+              <div className="flex flex-wrap gap-3 mt-8 relative z-10 w-full">
                 {['Commits', 'PRs', 'Stars'].map(tag => (
-                  <span key={tag} className="px-3 py-1 rounded-lg bg-primary/5 border border-primary/10 text-[10px] font-bold uppercase tracking-wider">{tag}</span>
+                  <span key={tag} className="px-4 py-1.5 rounded-lg bg-primary/5 border border-primary/10 text-[10px] font-black uppercase tracking-widest text-primary/80 flex-1 text-center whitespace-nowrap">{tag}</span>
                 ))}
               </div>
             </motion.div>
@@ -178,7 +196,7 @@ export default function Home() {
 
             <motion.div variants={itemVariants} className="glass-card p-10 flex flex-col justify-between group">
               <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6 font-bold">
-                ₹
+                <IndianRupee className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-2xl font-bold tracking-tight mb-4">Growth Engines</h3>
@@ -219,9 +237,9 @@ export default function Home() {
             <span className="font-bold">PulseBoard</span>
           </div>
           <div className="flex gap-8 text-sm font-medium text-muted-foreground">
-            <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Twitter</Link>
+            <Link href="https://pulseboard.dev/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="https://pulseboard.dev/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="https://x.com/pulseboard" className="hover:text-foreground transition-colors">Twitter</Link>
           </div>
           <div className="text-xs font-bold tracking-widest uppercase opacity-40">
             THANKS
