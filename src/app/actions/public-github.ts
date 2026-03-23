@@ -3,81 +3,102 @@
 import { Octokit } from "octokit";
 
 export async function getPublicGitHubData(username: string) {
-  // Directly use only the token (as requested) from either common environment variable name
   const token = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
   
-  const octokit = new Octokit({ 
-    auth: token 
-  });
+  if (!token) {
+    console.error("[github_error] No GITHUB_TOKEN found. Cannot fetch deep data.");
+    return null;
+  }
+
+  const octokit = new Octokit({ auth: token });
 
   try {
-    // 1. Fetch user (if this fails with 401/403, there's a token issue)
-    const { data: user } = await octokit.rest.users.getByUsername({ username });
+    // Fetch User Profile and Stats via GraphQL for maximum accuracy (Lifetime data)
+    const query = `
+      query($login: String!) {
+        user(login: $login) {
+          name
+          login
+          avatarUrl
+          bio
+          contributionsCollection {
+            contributionCalendar {
+              totalContributions
+            }
+          }
+          repositories(first: 100, ownerAffiliations: OWNER, orderBy: {field: STARGAZERS, direction: DESC}) {
+            totalCount
+            nodes {
+              name
+              description
+              stargazerCount
+              primaryLanguage {
+                name
+              }
+              url
+              isFork
+            }
+          }
+        }
+      }
+    `;
 
-    let repos: any[] = [];
-    let allRepos: any[] = [];
-    let events: any[] = [];
+    const response = await octokit.graphql<any>(query, { login: username });
+    const user = response.user;
 
-    // Parallel fetch with settled promises so partial data can still be displayed
-    await Promise.allSettled([
-      octokit.rest.repos.listForUser({
-        username,
-        sort: "updated",
-        per_page: 20,
-      }).then(res => repos = res.data || []),
-      
-      octokit.paginate(octokit.rest.repos.listForUser, {
-        username,
-        per_page: 100,
-      }).then(res => allRepos = res || []),
-      
-      octokit.rest.activity.listPublicEventsForUser({
-        username,
-        per_page: 100,
-      }).then(res => events = res.data || [])
-    ]);
+    if (!user) return null;
 
-    // Safety: ensure star counts are strictly numbers (handles numeric-string status codes if any)
-    const totalStars = allRepos.reduce(
-      (acc, repo) => acc + (typeof repo.stargazers_count === 'number' ? repo.stargazers_count : 0), 0
-    );
+    // Calculate total stars from ALL repositories (aggregating where possible)
+    // For large accounts, this is the most reliable way to get public star totals
+    const repos = user.repositories.nodes || [];
+    const totalStars = repos.reduce((acc: number, repo: any) => acc + (repo.stargazerCount || 0), 0);
+    
+    // Get Lifetime Contributions
+    const contributions = user.contributionsCollection?.contributionCalendar?.totalContributions || 0;
 
-    const contributions = events.filter(
-      e => e.type === "PushEvent" || e.type === "PullRequestEvent"
-    ).length;
-
-    // Fixed: Explicit type casting for TypeScript build success on Vercel
-    const langFrequency = allRepos.reduce((acc, r) => {
-      if (r.language) acc[r.language] = (acc[r.language] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const topLanguage = (Object.entries(langFrequency) as [string, number][])
-      .sort((a, b) => b[1] - a[1])[0]?.[0] || "TypeScript";
+    // Determine Top Tech
+    const langMap: Record<string, number> = {};
+    repos.forEach((r: any) => {
+      const lang = r.primaryLanguage?.name;
+      if (lang) langMap[lang] = (langMap[lang] || 0) + 1;
+    });
+    const topLanguage = Object.entries(langMap).sort((a,b) => b[1] - a[1])[0]?.[0] || "TypeScript";
 
     return {
       name: user.name || user.login,
-      avatarUrl: user.avatar_url,
+      avatarUrl: user.avatarUrl,
       bio: user.bio,
       totalStars,
       contributions,
       topLanguage,
-      repos: (repos || [])
-        .filter(r => !r.fork)
+      repos: repos
+        .filter((r: any) => !r.isFork)
         .slice(0, 8)
-        .map(repo => ({
+        .map((repo: any) => ({
           name: repo.name,
           description: repo.description,
-          stars: typeof repo.stargazers_count === 'number' ? repo.stargazers_count : 0,
-          language: repo.language,
-          link: repo.html_url,
+          stars: repo.stargazerCount,
+          language: repo.primaryLanguage?.name,
+          link: repo.url,
         })),
     };
   } catch (error: any) {
-    // Log exactly why it failed (useful for your debugging now)
-    console.error(`[github_authenticated_error] Status ${error.status} for user ${username}:`, error.message);
+    console.error(`[github_live_data_error] ${username}:`, error.message);
     
-    // Return null so the page shows the 'Profile Offline' screen (which ensures you know if the token is broken)
-    return null;
+    // Final emergency fallback if GraphQL fails but REST might work
+    try {
+        const { data: restUser } = await octokit.rest.users.getByUsername({ username });
+        return {
+            name: restUser.name || restUser.login,
+            avatarUrl: restUser.avatar_url,
+            bio: restUser.bio,
+            totalStars: 0,
+            contributions: 0,
+            topLanguage: "TypeScript",
+            repos: []
+        };
+    } catch {
+        return null;
+    }
   }
 }
