@@ -1,8 +1,25 @@
+import { Metadata } from "next";
 import { getPublicGitHubData } from "@/app/actions/public-github";
 import PublicProfileView from "@/components/public-profile-view";
 import { Activity } from "lucide-react";
 
 export const revalidate = 3600;
+
+export async function generateMetadata(props: { params: Promise<{ username: string }> }): Promise<Metadata> {
+  const { username } = await props.params;
+  const id = username === "demo" ? "levelsio" : username;
+  const profile = await getPublicGitHubData(id);
+
+  if (!profile) return { title: "Profile Not Found | PulseBoard" };
+
+  return {
+    title: `${profile.name || username}'s Live Pulse | PulseBoard`,
+    description: `Track ${profile.name || username}'s shipping velocity, open source contributions, and tech stack in real-time. Transparent building starts here.`,
+    openGraph: {
+      images: [profile.avatarUrl],
+    },
+  };
+}
 
 export default async function PublicPage(props: { params: Promise<{ username: string }> }) {
   const { username } = await props.params;

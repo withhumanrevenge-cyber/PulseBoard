@@ -130,17 +130,16 @@ export default function Home() {
               </Link>
             )}
             <Link
-              href="/u/levelsio"
+              href="/explore"
               className="h-14 px-10 flex items-center justify-center rounded-full glass border border-border/50 font-bold hover:bg-secondary/80 transition-all hover:scale-105"
             >
-              Explore Live Pulse
+              Explore the Network
             </Link>
           </motion.div>
         </section>
 
 
 
-        {/* Features Bento Grid */}
         <section className="w-full max-w-6xl px-6 pb-40">
           <motion.div 
             variants={containerVariants}

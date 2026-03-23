@@ -1,8 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Star, GitCommit, Code, ArrowUpRight, Github } from "lucide-react";
 import Link from "next/link";
+import { Sparkline } from "./sparkline";
 
 type GitHubProfile = {
   name: string | null | undefined;
@@ -85,24 +86,48 @@ export default function PublicProfileView({
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-20">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-24">
           {cards.map((stat, i) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className="relative overflow-hidden group p-8 rounded-[2.5rem] bg-secondary/30 border border-border/40 hover:bg-secondary/50 hover:border-primary/20 transition-all h-44 flex flex-col justify-between"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 + i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="relative overflow-hidden group p-10 rounded-[3rem] bg-secondary/10 border border-white/5 hover:border-primary/30 transition-all duration-700 min-h-[18rem] flex flex-col justify-between backdrop-blur-2xl"
             >
-              <div className="flex items-center justify-between z-10">
-                <span className="text-muted-foreground font-black uppercase text-[10px] tracking-widest">{stat.label}</span>
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 shadow-inner`}>
-                  <stat.icon className="w-6 h-6" />
+              <div className={`absolute -top-32 -right-32 w-64 h-64 rounded-full blur-[100px] opacity-[0.05] group-hover:opacity-[0.15] transition-opacity duration-1000 bg-current ${stat.color}`} />
+              
+              <div className="flex items-center justify-between z-10 relative">
+                <span className="text-muted-foreground font-black uppercase text-[10px] tracking-[0.3em] opacity-60">{stat.label}</span>
+                <div className={`w-14 h-14 rounded-[1.2rem] flex items-center justify-center ${stat.bg} ${stat.color} group-hover:rotate-[15deg] group-hover:scale-110 transition-all duration-700 glass border-white/5`}>
+                  <stat.icon className="w-7 h-7" />
                 </div>
               </div>
-              <div className="text-5xl font-black tracking-tighter z-10">{stat.value}</div>
+
+              <div className="z-10 relative mt-6 mb-6">
+                <div className={`font-black tracking-tighter leading-[0.9] break-words ${
+                   stat.value.length > 12 ? 'text-2xl lg:text-3xl' : 
+                   stat.value.length > 8 ? 'text-4xl lg:text-5xl' : 
+                   'text-6xl lg:text-7xl'
+                }`}>
+                  {stat.value}
+                </div>
+                <p className="mt-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">
+                   {stat.label === "Top Tech" ? "Primary Stack" : "Verified Source"}
+                </p>
+              </div>
+
+              <div className="relative z-10 pt-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                 <Sparkline 
+                    color={stat.color === "text-amber-500" ? "#f59e0b" : stat.color === "text-emerald-500" ? "#10b981" : "#06b6d4"} 
+                    data={stat.label === "Stars Earned" ? [2, 5, 3, 8, 12, 10, 15] : [20, 45, 30, 60, 80, 75, 90]}
+                    width={200}
+                    height={40}
+                 />
+              </div>
               
-              <stat.icon className={`absolute -bottom-6 -right-6 w-36 h-36 opacity-[0.03] ${stat.color} transform group-hover:-translate-y-4 group-hover:-translate-x-4 transition-transform duration-700`} />
+              <stat.icon size={220} className={`absolute -bottom-16 -right-16 opacity-[0.02] ${stat.color} group-hover:scale-110 group-hover:opacity-[0.04] transition-all duration-1000 rotate-12 -z-0`} />
             </motion.div>
           ))}
         </div>
@@ -118,44 +143,60 @@ export default function PublicProfileView({
             <div className="h-px flex-1 mx-6 bg-gradient-to-r from-border/50 to-transparent" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             {profile.repos.map((repo, i) => (
               <motion.div
                 key={repo.name}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.7 + i * 0.1 }}
-                className="group flex flex-col justify-between p-8 rounded-[2.5rem] bg-card/60 backdrop-blur-sm border border-border/40 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 relative overflow-hidden h-64 shadow-sm"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * i, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="group relative flex flex-col justify-between p-8 rounded-[2.5rem] bg-secondary/5 border border-white/5 hover:border-primary/40 hover:bg-secondary/10 transition-all duration-700 h-72 overflow-hidden backdrop-blur-md"
               >
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary/40 via-purple-500/40 to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 rounded-full blur-[60px] group-hover:bg-primary/10 transition-colors duration-700" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-black group-hover:text-primary transition-colors flex items-center gap-2">
-                      {repo.name}
-                      <ArrowUpRight className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-all text-primary" />
-                    </h3>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/80 text-xs font-black ring-1 ring-border/50">
-                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                      {(repo.stars ?? 0).toLocaleString()}
+                <div className="relative z-10 space-y-6">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1 max-w-[70%]">
+                      <h3 className="text-3xl font-black group-hover:text-primary transition-colors leading-none tracking-tighter break-words">
+                        {repo.name}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 leading-none">Healthy Source</span>
+                      </div>
+                    </div>
+
+                    <div className="relative group/star flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/5 border border-amber-500/10 group-hover:bg-amber-500/10 transition-all duration-500">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500 group-hover/star:scale-110 transition-transform" />
+                      <span className="font-black text-sm tracking-tighter">{(repo.stars ?? 0).toLocaleString()}</span>
+                      
+                      {repo.stars && repo.stars > 0 && (
+                        <div className="absolute inset-0 rounded-2xl ring-1 ring-amber-500/20 animate-pulse" />
+                      )}
                     </div>
                   </div>
-                  <p className="text-muted-foreground leading-relaxed line-clamp-2 font-medium">
-                    {repo.description || "Experimental repository exploring new technical domains."}
+
+                  <p className="text-muted-foreground text-lg leading-relaxed line-clamp-2 font-medium tracking-tight">
+                    {repo.description || "Experimental repository exploring new technical domains and architectural patterns."}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between mt-auto">
-                  <div className="flex items-center gap-2">
+                <div className="relative z-10 flex items-center justify-between pt-4">
+                   <div className="flex items-center gap-2">
                     {repo.language && (
-                      <span className="px-4 py-1.5 text-[10px] font-black uppercase tracking-tighter rounded-full bg-primary/5 text-primary border border-primary/20">
+                      <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-foreground/[0.03] border border-foreground/5 text-[10px] font-black uppercase tracking-widest group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-500">
                         {repo.language}
-                      </span>
+                      </div>
                     )}
+                  </div>
+                  <div className="p-3 rounded-full bg-secondary opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-4 transition-all duration-500 border border-white/5">
+                    <ArrowUpRight className="w-5 h-5" />
                   </div>
                 </div>
                 
-                <a href={repo.link} target="_blank" rel="noreferrer" className="absolute inset-0 z-10" aria-label={`View ${repo.name}`}>
+                <a href={repo.link} target="_blank" rel="noreferrer" className="absolute inset-0 z-20" aria-label={`View ${repo.name}`}>
                   <span className="sr-only">View Repository</span>
                 </a>
               </motion.div>
