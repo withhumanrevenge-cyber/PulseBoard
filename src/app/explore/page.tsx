@@ -1,7 +1,8 @@
 import { getExploreUsers } from "@/app/actions/explore";
 import Link from "next/link";
-import { ArrowRight, Globe, Github, Zap, Search } from "lucide-react";
+import { ArrowRight, Globe, Github, Zap } from "lucide-react";
 import { PulseLogo } from "@/components/pulse-logo";
+import ExploreSearch from "@/components/explore-search";
 
 export const revalidate = 600;
 
@@ -56,37 +57,7 @@ export default async function ExplorePage() {
             Real-time transparency from the world&apos;s most active builders.
           </p>
 
-          <form
-            action=""
-            method="get"
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
-            className="max-w-md mx-auto mt-8 flex items-center gap-3 glass border border-border/50 rounded-full p-2 pl-6 focus-within:ring-2 focus-within:ring-primary/40 transition-all"
-          >
-            <Search className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search a GitHub handle..."
-              className="bg-transparent border-none outline-none flex-1 font-medium placeholder:text-muted-foreground/30 text-sm"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const val = (e.target as HTMLInputElement).value.trim();
-                  if (val) window.location.href = `/u/${val}`;
-                }
-              }}
-            />
-            <button
-              type="button"
-              className="px-5 py-2.5 rounded-full bg-foreground text-background text-xs font-black hover:scale-105 active:scale-95 transition-all"
-              onClick={(e) => {
-                const input = (e.currentTarget.parentElement as HTMLFormElement).querySelector('input') as HTMLInputElement;
-                if (input.value.trim()) window.location.href = `/u/${input.value.trim()}`;
-              }}
-            >
-              View
-            </button>
-          </form>
+          <ExploreSearch />
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32">
