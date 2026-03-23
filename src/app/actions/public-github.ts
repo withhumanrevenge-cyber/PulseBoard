@@ -3,7 +3,6 @@
 import { Octokit } from "octokit";
 
 export async function getPublicGitHubData(username: string) {
-  // ✅ THIS is the fix — one line change
   const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
   try {
@@ -27,14 +26,13 @@ export async function getPublicGitHubData(username: string) {
 
     const { data: events } = await octokit.rest.activity.listPublicEventsForUser({
       username,
-      per_page: 100, // ✅ bumped from 50 to 100 for more accurate count
+      per_page: 100,
     });
 
     const contributions = events.filter(
       e => e.type === "PushEvent" || e.type === "PullRequestEvent"
     ).length;
 
-    // ✅ Better language detection — count by repo frequency not stars
     const langFrequency = allRepos.reduce((acc, r) => {
       if (r.language) acc[r.language] = (acc[r.language] || 0) + 1;
       return acc;
