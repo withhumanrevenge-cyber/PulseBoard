@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { Activity, Star, GitCommit, Code, LayoutDashboard, Share2, LogOut, RefreshCcw, AlertCircle, ExternalLink, Zap, Github, ArrowRight } from "lucide-react";
+import { Activity, Star, GitCommit, Code, LayoutDashboard, Share2, LogOut, RefreshCcw, AlertCircle, ExternalLink, Zap, Github, ArrowRight, Shield } from "lucide-react";
 import { useTheme } from "next-themes";
 import { SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
@@ -57,7 +57,7 @@ export default function DashboardPage() {
     { label: "Total Stars", value: data?.totalStars?.toLocaleString() ?? "N/A", icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "Pulse Contributions", value: data?.contributionCount?.toLocaleString() ?? "0", icon: GitCommit, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { label: "Top Tech", value: data?.topLanguage ?? "...", icon: Code, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Active Days", value: data?.activeDays ?? "0/30", icon: Activity, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Pulse Badge", value: "Active", icon: Shield, color: "text-purple-500", bg: "bg-purple-500/10" },
   ];
 
   if (!isLoaded) return (
@@ -252,20 +252,51 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="p-12 rounded-[3.5rem] bg-gradient-to-tr from-blue-500/10 to-purple-500/10 border border-white/5 flex flex-col md:flex-row items-center justify-between gap-10 group overflow-hidden relative"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
         >
-            <div className="absolute top-0 right-0 p-12 text-primary/5 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-1000">
-                <Zap size={180} />
+            <div className="p-12 rounded-[3.5rem] bg-gradient-to-tr from-blue-500/10 to-purple-500/10 border border-white/5 flex flex-col justify-between gap-10 group overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-12 text-primary/5 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-1000">
+                    <Zap size={180} />
+                </div>
+                <div className="space-y-4 max-w-xl relative z-10">
+                    <h2 className="text-4xl font-black tracking-tight leading-none">Unlock the MRR Pulse</h2>
+                    <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+                        Ready to show your growth? Connect Stripe to display your live MRR velocity with currency localization.
+                    </p>
+                </div>
+                <button className="px-10 py-5 bg-white text-black rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5 relative z-10 w-fit">
+                    Connect Stripe
+                </button>
             </div>
-            <div className="space-y-4 max-w-xl relative z-10 text-center md:text-left">
-                <h2 className="text-4xl font-black tracking-tight leading-none">Unlock the MRR Pulse</h2>
-                <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-                    Ready to show your growth? Connect Stripe to display your live MRR velocity and transparency data with currency localization.
-                </p>
+
+            <div className="p-12 rounded-[3.5rem] bg-secondary/5 border border-white/5 flex flex-col justify-between gap-10 group overflow-hidden relative backdrop-blur-xl">
+                <div className="space-y-4 relative z-10">
+                    <h2 className="text-4xl font-black tracking-tight leading-none">Reputation Control</h2>
+                    <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+                        Manage your public visibility. Toggling these hides your metrics from the global directory and API.
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+                    {[
+                      { label: "Hide Star Counts", icon: Star },
+                      { label: "Hide Contributions", icon: GitCommit },
+                      { label: "Collaboration Mode", icon: Shield },
+                    ].map(pref => (
+                      <button 
+                        key={pref.label} 
+                        className="flex items-center justify-between p-5 rounded-2xl glass border-primary/10 hover:border-primary/40 transition-all font-bold group"
+                      >
+                        <div className="flex items-center gap-3">
+                            <pref.icon className="w-4 h-4 text-primary" />
+                            <span className="text-xs">{pref.label}</span>
+                        </div>
+                        <div className="w-8 h-4 rounded-full bg-primary/20 relative">
+                             <div className="absolute top-1 left-1 w-2 h-2 rounded-full bg-primary" />
+                        </div>
+                      </button>
+                    ))}
+                </div>
             </div>
-            <button className="px-10 py-5 bg-white text-black rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5 relative z-10">
-                Connect Stripe
-            </button>
         </motion.div>
 
         <motion.div

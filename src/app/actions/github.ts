@@ -99,6 +99,9 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
         clerk_id: userId,
         username,
         avatar_url: metrics.avatarUrl,
+        total_stars: metrics.totalStars,
+        contribution_count: metrics.contributionCount,
+        last_synced_at: new Date().toISOString()
       }, { onConflict: "clerk_id" });
     }
 

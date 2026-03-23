@@ -7,8 +7,8 @@ export async function getExploreUsers(): Promise<{ id: string; username: string;
 
   const { data, error } = await supabase
     .from("users")
-    .select("id, username, avatar_url")
-    .order("created_at", { ascending: false })
+    .select("id, username, avatar_url, total_stars, contribution_count")
+    .order("total_stars", { ascending: false })
     .limit(20);
 
   if (error) {
