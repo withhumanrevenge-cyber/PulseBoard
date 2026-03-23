@@ -3,7 +3,7 @@ import { getPublicGitHubData } from "@/app/actions/public-github";
 import PublicProfileView from "@/components/public-profile-view";
 import { Activity } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 300;
 
 export async function generateMetadata(props: { params: Promise<{ username: string }> }): Promise<Metadata> {
   const { username } = await props.params;

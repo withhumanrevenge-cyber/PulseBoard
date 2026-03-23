@@ -21,7 +21,7 @@ export async function getPublicGitHubData(username: string) {
     ]);
 
     const totalStars = allRepos.reduce(
-      (acc, repo) => acc + (repo.stargazers_count || 0), 0
+      (acc, repo) => acc + Math.max(0, repo.stargazers_count || 0), 0
     );
 
     const { data: events } = await octokit.rest.activity.listPublicEventsForUser({
@@ -54,7 +54,7 @@ export async function getPublicGitHubData(username: string) {
         .map(repo => ({
           name: repo.name,
           description: repo.description,
-          stars: repo.stargazers_count,
+          stars: Math.max(0, repo.stargazers_count || 0),
           language: repo.language,
           link: repo.html_url,
         })),
