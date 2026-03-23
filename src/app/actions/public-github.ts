@@ -3,17 +3,17 @@
 import { Octokit } from "octokit";
 
 export async function getPublicGitHubData(username: string) {
-  // Strategy: Try with token first, if it fails with 401, retry unauthenticated
-  const fetchWithRetry = async (useToken: boolean) => {
+  // Check both common environment variable names for the token
+  const token = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
+  
+  const fetchWithRetry = async (useToken: boolean): Promise<any> => {
     const octokit = new Octokit({ 
-      auth: useToken ? process.env.GITHUB_TOKEN : undefined 
+      auth: useToken ? token : undefined 
     });
 
     try {
-      // 1. Fetch User
       const { data: user } = await octokit.rest.users.getByUsername({ username });
 
-      // 2. Parallel Fetch for stats
       let repos: any[] = [];
       let allRepos: any[] = [];
       let events: any[] = [];
@@ -71,9 +71,8 @@ export async function getPublicGitHubData(username: string) {
           })),
       };
     } catch (error: any) {
-      // If we used a token and it returned 401/403, retry without token
       if (useToken && (error.status === 401 || error.status === 403)) {
-        console.warn(`[github_auth_fallback] Token failed for ${username}, retrying unauthenticated.`);
+        console.warn(`[github_fallback] Token failed for ${username}, retrying unauthenticated.`);
         return fetchWithRetry(false);
       }
       throw error;
@@ -81,7 +80,7 @@ export async function getPublicGitHubData(username: string) {
   };
 
   try {
-    return await fetchWithRetry(!!process.env.GITHUB_TOKEN);
+    return await fetchWithRetry(!!token);
   } catch (error) {
     console.error(`[github_critical_error] ${username}:`, error);
     return {
