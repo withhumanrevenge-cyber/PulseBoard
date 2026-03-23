@@ -1,21 +1,13 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { ArrowRight, Activity, Github, Zap, Globe, Shield, Sparkles, Search, ArrowUpRight } from "lucide-react";
+import { ArrowRight, Github, Zap, Globe, Shield, Sparkles, Search, ArrowUpRight, Code, Star, GitCommit, Link as LinkIcon, RefreshCw } from "lucide-react";
 import { PulseLogo } from "@/components/pulse-logo";
 import { motion, Variants } from "framer-motion";
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.3,
-    },
-  },
-};
+import { NeutralLivelyBg } from "@/components/neutral-bg";
+import gsap from "gsap";
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -23,7 +15,7 @@ const itemVariants: Variants = {
     opacity: 1, 
     y: 0, 
     transition: { 
-      duration: 0.5, 
+      duration: 0.8, 
       ease: [0.16, 1, 0.3, 1] 
     } 
   },
@@ -32,86 +24,68 @@ const itemVariants: Variants = {
 export default function Home() {
   const { isSignedIn, isLoaded } = useUser();
 
-  return (
-    <div className="flex flex-col min-h-screen bg-[#FDFDFF] text-slate-900 selection:bg-indigo-100">
-      {/* Immersive Background (Light Mode Apple Style) */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-indigo-50/50 rounded-full blur-[140px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-50/30 rounded-full blur-[120px]" />
-      </div>
+  useEffect(() => {
+    if (isLoaded) {
+      gsap.from(".hero-content > *", {
+        opacity: 0,
+        y: 30,
+        duration: 1.2,
+        stagger: 0.2,
+        ease: "power4.out",
+        delay: 0.5
+      });
+    }
+  }, [isLoaded]);
 
-      <header className="px-6 lg:px-14 h-24 flex items-center justify-between glass sticky top-0 z-50 border-b border-indigo-50/50">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3 group"
-        >
-          <div className="p-2.5 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-100">
-            <PulseLogo className="w-5 h-5" />
-          </div>
-          <span className="text-xl font-black tracking-tight tracking-tighter text-indigo-950 uppercase">PulseBoard</span>
-        </motion.div>
+  return (
+    <div className="flex flex-col min-h-screen bg-[#FDFDFF] text-slate-900 selection:bg-slate-200 font-sans overflow-x-hidden relative">
+      <NeutralLivelyBg />
+      
+      {/* Premium Clean Header */}
+      <header className="px-6 lg:px-14 h-24 flex items-center justify-between backdrop-blur-xl bg-white/60 sticky top-0 z-50 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xl font-bold tracking-tight text-slate-900">PulseBoard</span>
+        </div>
         
-        <nav className="flex items-center gap-8">
-          <Link href="/explore" className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors hidden md:block">
-            Explore
-          </Link>
-          <div className="h-4 w-px bg-slate-100 hidden md:block" />
-          {isLoaded && !isSignedIn && (
+        <nav className="flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="/explore" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Explore</Link>
+            <Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Docs</Link>
+            <Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Pricing</Link>
+          </div>
+          <div className="h-4 w-px bg-slate-200 hidden md:block" />
+          {!isSignedIn ? (
             <SignInButton mode="modal">
-              <button className="relative group px-6 py-2.5 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest overflow-hidden transition-all hover:pr-10 hover:scale-105 active:scale-95 shadow-xl shadow-slate-200">
-                <span>Sign In</span>
-                <ArrowRight className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all font-bold" />
+              <button className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-bold shadow-sm hover:bg-slate-50 transition-all">
+                Sign in with GitHub
               </button>
             </SignInButton>
-          )}
-          {isLoaded && isSignedIn && (
-            <Link href="/dashboard" className="px-6 py-2.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-indigo-100">
-              Go to Console
+          ) : (
+            <Link href="/dashboard" className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold shadow-xl hover:bg-black transition-all">
+              Dashboard
             </Link>
           )}
         </nav>
       </header>
 
       <main className="flex-1 flex flex-col items-center">
-        <section className="relative w-full max-w-7xl px-6 pt-32 pb-40 flex flex-col items-center text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white shadow-xl shadow-indigo-50 border border-indigo-50 text-[10px] font-black uppercase tracking-[0.3em] mb-12 text-indigo-600"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-            </span>
-            Verified Reputation Protocol
-          </motion.div>
+        {/* Identity & Launch Section (Matching Reference) */}
+        <section className="hero-content relative w-full max-w-5xl px-6 pt-32 pb-40 flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-bold mb-10 border border-emerald-100/50">
+             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+             Live metrics · No manual work
+          </div>
           
-          <motion.h1 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-7xl md:text-[8.5rem] font-black tracking-tight tracking-tighter leading-[0.85] mb-10 text-slate-950 uppercase"
-          >
-            The Automated <br />
-            <span className="text-indigo-600">Protocol</span>
-          </motion.h1>
+          <h1 className="text-6xl md:text-7xl font-black tracking-tight leading-[1.1] mb-8 text-slate-950 max-w-3xl">
+            Your GitHub activity, <br className="hidden md:block"/> beautifully public.
+          </h1>
           
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl md:text-2xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-semibold mb-16"
-          >
-            Connect once. Stay verified. Your shipping velocity turns into automated professional leverage for the global tech ecosystem.
-          </motion.p>
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium mb-12">
+            Enter any GitHub username and get an instant, shareable dashboard. Contributions, repos, languages, streak — all live.
+          </p>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col items-center gap-6 w-full max-w-xl mx-auto"
-          >
+          <div className="flex flex-col items-center gap-4 w-full max-w-xl mx-auto">
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
@@ -119,104 +93,85 @@ export default function Home() {
                 const input = form.elements.namedItem('username') as HTMLInputElement;
                 if (input.value) window.location.href = `/u/${input.value}`;
               }}
-              className="group flex items-center w-full bg-white shadow-[0_40px_80px_-24px_rgba(79,70,229,0.15)] border border-indigo-50 rounded-[2.5rem] p-3 pl-8 overflow-hidden focus-within:ring-4 focus-within:ring-indigo-100 transition-all font-semibold"
+              className="flex items-center w-full bg-slate-50 border border-slate-200 rounded-2xl p-1.5 focus-within:ring-4 focus-within:ring-slate-100 transition-all"
             >
-              <span className="text-slate-400 tracking-tight font-black hidden sm:inline flex-shrink-0 uppercase text-[10px]">pulseboard.dev/u/</span>
+              <div className="px-6 py-3 py-4 text-slate-400 font-medium hidden sm:block">github.com /</div>
               <input 
                 type="text" 
                 name="username"
-                placeholder="github_handle" 
-                className="bg-transparent border-none outline-none flex-1 min-w-0 font-black placeholder:text-slate-300 text-slate-900 ml-2"
+                placeholder="username" 
+                className="bg-transparent border-none outline-none flex-1 font-bold text-slate-900 px-4"
                 required
               />
-              <button type="submit" className="flex-shrink-0 flex items-center justify-center px-10 py-5 rounded-[1.8rem] bg-indigo-600 text-white font-black uppercase text-xs tracking-widest hover:bg-slate-900 transition-all gap-3 whitespace-nowrap shadow-xl shadow-indigo-100">
-                Launch <Search className="w-4 h-4" />
+              <button type="submit" className="px-8 py-4 rounded-[0.85rem] bg-slate-900 text-white font-bold text-sm tracking-tight hover:bg-black transition-all shadow-xl active:scale-95 duration-300">
+                View pulse
               </button>
             </form>
-          </motion.div>
+            <p className="text-sm text-slate-400 font-medium">
+               or see a <Link href="/u/levelsio" className="text-slate-900 underline underline-offset-4 decoration-slate-300 hover:decoration-slate-900 transition-all">live example &rarr;</Link>
+            </p>
+          </div>
         </section>
 
-        <section className="w-full max-w-7xl px-6 pb-60">
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-12 gap-6"
-          >
-            <motion.div variants={itemVariants} className="md:col-span-8 bg-white p-12 rounded-[4rem] border border-indigo-50 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.02)] min-h-[500px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-12 text-indigo-50 group-hover:scale-110 group-hover:rotate-12 transition-all duration-1000">
-                <Github size={300} strokeWidth={1} />
-              </div>
-              <div className="relative z-10 h-full flex flex-col justify-between">
-                <div className="space-y-6">
-                    <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100/50">
-                        <Github className="w-7 h-7" />
+        {/* Global Metrics Bar (Matching Reference) */}
+        <section className="w-full max-w-7xl px-6 pb-24">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-y border-slate-100">
+                {[
+                    { label: 'Dashboards', value: '12k+' },
+                    { label: 'Commits tracked', value: '4.2M' },
+                    { label: 'Repos indexed', value: '98k' },
+                    { label: 'Uptime', value: '99.9%' }
+                ].map(stat => (
+                    <div key={stat.label} className="text-center space-y-1">
+                        <div className="text-3xl font-black text-slate-950">{stat.value}</div>
+                        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</div>
                     </div>
-                    <h3 className="text-5xl font-black tracking-tight uppercase leading-none text-slate-950">GitHub Pulse <br />Verification</h3>
-                    <p className="text-slate-400 text-xl max-w-md font-semibold leading-relaxed">Your lifetime commits and shipping velocity synced instantly. Credibility you don't have to manually update.</p>
-                </div>
-                <div className="flex gap-4">
-                    {['Automated', 'Verified', 'Public'].map(t => (
-                        <span key={t} className="px-4 py-1.5 rounded-full bg-indigo-50 text-[10px] font-black uppercase tracking-widest text-indigo-600">{t}</span>
-                    ))}
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="md:col-span-4 bg-slate-950 p-12 rounded-[4rem] shadow-2xl shadow-slate-200 border border-slate-800 text-white relative overflow-hidden group">
-                <div className="relative z-10 flex flex-col justify-between h-full">
-                    <div className="space-y-6">
-                        <div className="w-16 h-16 rounded-[2rem] bg-indigo-500 flex items-center justify-center text-white shadow-lg">
-                            <Zap className="w-7 h-7" />
-                        </div>
-                        <h3 className="text-4xl font-black tracking-tight uppercase leading-none">Zero Ops <br />Integrity</h3>
-                        <p className="text-slate-400 font-semibold leading-relaxed">Connect once. We handle the heavy lifting. Your profile lives forever.</p>
-                    </div>
-                    <ArrowUpRight className="w-10 h-10 text-indigo-500 opacity-20 group-hover:opacity-100 transition-opacity" />
-                </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="md:col-span-12 bg-white p-16 rounded-[4rem] border border-indigo-50 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.02)] flex flex-col md:flex-row md:items-center gap-16 relative overflow-hidden group">
-                <div className="absolute -bottom-12 -right-12 text-indigo-50 opacity-50">
-                    <Shield size={320} />
-                </div>
-                <div className="flex-1 space-y-8 relative z-10">
-                    <div className="w-16 h-16 rounded-[2rem] bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
-                        <Globe className="w-7 h-7" />
-                    </div>
-                    <h3 className="text-6xl font-black tracking-tight uppercase leading-none text-indigo-950">Global Network <br />Reputation</h3>
-                    <p className="text-slate-400 text-xl font-semibold leading-relaxed max-w-2xl">PulseBoard transforms your GitHub data into a verifiable professional profile. Join the top builders in the global elite directory.</p>
-                </div>
-                <div className="flex flex-col gap-4 relative z-10">
-                    <div className="px-10 py-6 bg-emerald-50 border border-emerald-100 rounded-3xl flex items-center gap-5 text-emerald-600 transform group-hover:scale-105 transition-transform">
-                        <Sparkles className="w-6 h-6" />
-                        <span className="font-black uppercase tracking-widest text-xs">Verified Elite</span>
-                    </div>
-                    <div className="px-10 py-6 bg-slate-900 border border-slate-700 rounded-3xl flex items-center gap-5 text-white transform group-hover:-rotate-2 transition-transform">
-                        <Activity className="w-6 h-6 text-indigo-400" />
-                        <span className="font-black uppercase tracking-widest text-xs">Live Protocol</span>
-                    </div>
-                </div>
-            </motion.div>
-          </motion.div>
-        </section>
-
-        <footer className="w-full max-w-7xl px-6 py-32 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-12">
-          <div className="flex items-center gap-4">
-            <div className="p-2 rounded-xl bg-slate-900 text-white">
-                <PulseLogo className="w-5 h-5" />
+                ))}
             </div>
-            <span className="font-black uppercase tracking-[0.2em] text-xs text-slate-800">PulseBoard Protocol</span>
-          </div>
-          <div className="flex gap-12 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-            <Link href="https://pulseboard.dev/privacy" className="hover:text-indigo-600 transition-colors">Privacy</Link>
-            <Link href="https://pulseboard.dev/terms" className="hover:text-indigo-600 transition-colors">Terms</Link>
-            <Link href="https://x.com/pulseboard" className="hover:text-indigo-600 transition-colors">Twitter</Link>
-          </div>
-          <div className="text-[10px] font-black tracking-[0.8em] uppercase text-slate-200">
-            THANKS FOR SHIPPING
-          </div>
+        </section>
+
+        {/* Feature Grid (Matching Reference) */}
+        <section className="w-full max-w-7xl px-6 pb-60">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-slate-100 rounded-[2.5rem] overflow-hidden bg-white shadow-2xl shadow-slate-100">
+                {[
+                    { 
+                        title: 'Live syncing', 
+                        desc: 'Dashboard updates automatically as you push. No manual refresh, no delays.', 
+                        icon: RefreshCw,
+                        iconBg: 'bg-blue-50 text-blue-500'
+                    },
+                    { 
+                        title: 'Shareable URL', 
+                        desc: 'Every profile gets a public URL. Drop it in your LinkedIn bio or README.', 
+                        icon: LinkIcon,
+                        iconBg: 'bg-indigo-50 text-indigo-500'
+                    },
+                    { 
+                        title: 'Zero setup', 
+                        desc: 'No OAuth required for public profiles. Just type a username and go.', 
+                        icon: Zap,
+                        iconBg: 'bg-orange-50 text-orange-500'
+                    }
+                ].map((f, i) => (
+                    <div key={f.title} className={`p-12 space-y-6 ${i !== 2 ? 'md:border-r border-slate-100' : ''} hover:bg-slate-50/50 transition-colors group`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${f.iconBg} shadow-sm group-hover:scale-110 transition-transform`}>
+                            <f.icon className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-3">
+                            <h3 className="text-xl font-bold text-slate-950">{f.title}</h3>
+                            <p className="text-slate-400 font-medium leading-relaxed">{f.desc}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+
+        <footer className="w-full max-w-7xl px-6 py-24 border-t border-slate-100 text-center space-y-6">
+            <div className="flex items-center justify-center gap-3">
+                <PulseLogo className="w-5 h-5 opacity-20" />
+                <span className="text-sm font-bold text-slate-300">PulseBoard Protocol</span>
+            </div>
+            <div className="text-[10px] font-black tracking-[1em] uppercase text-slate-100">THANKS FOR SHIPPING</div>
         </footer>
       </main>
     </div>
