@@ -23,15 +23,35 @@ type GitHubProfile = {
 
 export default function PublicProfileView({ 
   username, 
-  profile 
+  profile,
+  privacy = { hideStars: false, hideContributions: false, hideTech: false }
 }: { 
   username: string; 
-  profile: GitHubProfile 
+  profile: GitHubProfile;
+  privacy?: { hideStars: boolean; hideContributions: boolean; hideTech: boolean };
 }) {
   const cards = [
-    { label: "Stars Earned", value: profile.totalStars.toLocaleString(), icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Contributions", value: profile.contributions.toString(), icon: GitCommit, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Top Tech", value: profile.topLanguage, icon: Code, color: "text-cyan-500", bg: "bg-cyan-500/10" },
+    { 
+      label: "Stars Earned", 
+      value: privacy.hideStars ? "—" : profile.totalStars.toLocaleString(), 
+      icon: Star, 
+      color: "text-amber-500", 
+      bg: "bg-amber-500/10" 
+    },
+    { 
+      label: "Contributions", 
+      value: privacy.hideContributions ? "—" : profile.contributions.toLocaleString(), 
+      icon: GitCommit, 
+      color: "text-emerald-500", 
+      bg: "bg-emerald-500/10" 
+    },
+    { 
+      label: "Top Tech", 
+      value: privacy.hideTech ? "Private" : profile.topLanguage, 
+      icon: Code, 
+      color: "text-cyan-500", 
+      bg: "bg-cyan-500/10" 
+    },
   ];
 
   return (

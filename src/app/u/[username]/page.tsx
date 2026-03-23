@@ -41,5 +41,21 @@ export default async function PublicPage(props: { params: Promise<{ username: st
     );
   }
 
-  return <PublicProfileView username={id} profile={profile} />;
+  // Fetch Privacy Settings from Supabase
+  let privacy = { hideStars: false, hideContributions: false, hideTech: false };
+  const { supabase } = await import("@/lib/supabase");
+  
+  if (supabase) {
+    const { data } = await supabase
+      .from("users")
+      .select("privacy_settings")
+      .eq("username", id)
+      .single();
+    
+    if (data?.privacy_settings) {
+      privacy = data.privacy_settings;
+    }
+  }
+
+  return <PublicProfileView username={id} profile={profile} privacy={privacy} />;
 }
