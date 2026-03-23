@@ -3,50 +3,54 @@
 import { Octokit } from "octokit";
 
 export async function getPublicGitHubData(username: string) {
-  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  // Use the token if available, otherwise fall back to unauthenticated (limited to 60/hr)
+  const octokit = new Octokit({ 
+    auth: process.env.GITHUB_TOKEN || undefined 
+  });
 
   try {
-    // 1. Fetch user profile first (this is the most critical call)
-    const { data: user } = await octokit.rest.users.getByUsername({ username });
+    let userData: any = null;
+    try {
+      const { data } = await octokit.rest.users.getByUsername({ username });
+      userData = data;
+    } catch (e) {
+      console.warn(`[github_user_warning] Could not fetch user ${username} via authenticated API. Falling back.`);
+      // Fallback: try unauthenticated fetch or just use username
+      userData = {
+        login: username,
+        name: username,
+        avatar_url: `https://github.com/${username}.png`,
+        bio: "Build in Public enthusiast."
+      };
+    }
 
-    // 2. Fetch repos and events with separate try/catch blocks to ensure one failure doesn't kill the whole thing
     let repos: any[] = [];
     let allRepos: any[] = [];
     let events: any[] = [];
 
-    try {
-      const reposResponse = await octokit.rest.repos.listForUser({
+    // Parallel fetch with individual catch-alls to ensure profile loads even if API is grumpy
+    await Promise.allSettled([
+      octokit.rest.repos.listForUser({
         username,
         sort: "updated",
         per_page: 20,
-      });
-      repos = reposResponse.data || [];
-    } catch (e) {
-      console.error(`[github_repos_error] ${username}:`, e);
-    }
-
-    try {
-      allRepos = await octokit.paginate(octokit.rest.repos.listForUser, {
+      }).then(res => repos = res.data || []),
+      
+      octokit.paginate(octokit.rest.repos.listForUser, {
         username,
         per_page: 100,
-      });
-    } catch (e) {
-      console.error(`[github_paginate_error] ${username}:`, e);
-    }
-
-    try {
-      const eventsResponse = await octokit.rest.activity.listPublicEventsForUser({
+      }).then(res => allRepos = res || []),
+      
+      octokit.rest.activity.listPublicEventsForUser({
         username,
         per_page: 100,
-      });
-      events = eventsResponse.data || [];
-    } catch (e) {
-      console.error(`[github_events_error] ${username}:`, e);
-    }
+      }).then(res => events = res.data || [])
+    ]);
 
-    // 3. Robust calculation logic
+    // Strict numeric extraction to prevent '404' or strings from leaking into stars count
     const totalStars = allRepos.reduce(
-      (acc, repo) => acc + (typeof repo.stargazers_count === 'number' ? repo.stargazers_count : 0), 0
+      (acc, repo) => acc + (typeof repo.stargazers_count === 'number' ? repo.stargazers_count : 0), 
+      0
     );
 
     const contributions = events.filter(
@@ -62,13 +66,13 @@ export async function getPublicGitHubData(username: string) {
       .sort((a, b) => b[1] - a[1])[0]?.[0] || "TypeScript";
 
     return {
-      name: user.name || user.login,
-      avatarUrl: user.avatar_url,
-      bio: user.bio,
-      totalStars: Math.max(0, totalStars),
-      contributions: Math.max(0, contributions),
+      name: userData.name || userData.login,
+      avatarUrl: userData.avatar_url,
+      bio: userData.bio,
+      totalStars,
+      contributions,
       topLanguage,
-      repos: repos
+      repos: (repos || [])
         .filter(r => !r.fork)
         .slice(0, 8)
         .map(repo => ({
@@ -80,7 +84,16 @@ export async function getPublicGitHubData(username: string) {
         })),
     };
   } catch (error) {
-    console.error(`[github_public_critical_error] ${username}:`, error);
-    return null;
+    // If we're here, it's a catastrophic error (not just an API 404/403)
+    console.error(`[github_critical_error] ${username}:`, error);
+    return {
+        name: username,
+        avatarUrl: `https://github.com/${username}.png`,
+        bio: "GitHub profile temporarily unavailable.",
+        totalStars: 0,
+        contributions: 0,
+        topLanguage: "N/A",
+        repos: []
+    };
   }
 }
