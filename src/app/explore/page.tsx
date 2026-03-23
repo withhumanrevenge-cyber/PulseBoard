@@ -1,12 +1,18 @@
 import { getExploreUsers } from "@/app/actions/explore";
 import Link from "next/link";
-import { ArrowRight, Globe, Github, Zap } from "lucide-react";
+import { ArrowRight, Globe, Github, Zap, Search } from "lucide-react";
 import { PulseLogo } from "@/components/pulse-logo";
 
 export const revalidate = 600;
 
 export default async function ExplorePage() {
-  const users = await getExploreUsers();
+  let users: { id: string; username: string; avatar_url: string }[] = [];
+
+  try {
+    users = await getExploreUsers();
+  } catch {
+    users = [];
+  }
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-primary/20 bg-background text-foreground">
@@ -22,85 +28,135 @@ export default async function ExplorePage() {
           </div>
           <span className="text-xl font-black tracking-tight">PulseBoard</span>
         </Link>
-        
-        <Link 
+
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+            Home
+          </Link>
+          <Link
             href="/dashboard"
             className="flex items-center gap-2 px-6 py-2 rounded-full border border-border/50 bg-foreground text-background text-xs font-bold hover:scale-105 active:scale-95 transition-all"
-        >
+          >
             My Console
-        </Link>
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-20 space-y-24">
         <section className="text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black uppercase tracking-widest text-primary/80">
-                <Globe className="w-3 h-3" />
-                Public Directory
-            </div>
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85]">
-                EXPLORE <br />
-                <span className="text-gradient">NETWORK</span>
-            </h1>
-            <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed uppercase tracking-widest text-[10px] border-t border-border pt-6 mt-12 opacity-40">
-                Real-time transparency from the world&apos;s most active builders.
-            </p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black uppercase tracking-widest text-primary/80">
+            <Globe className="w-3 h-3" />
+            Public Directory
+          </div>
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85]">
+            EXPLORE <br />
+            <span className="text-gradient">NETWORK</span>
+          </h1>
+          <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+            Real-time transparency from the world&apos;s most active builders.
+          </p>
+
+          <form
+            action=""
+            method="get"
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+            className="max-w-md mx-auto mt-8 flex items-center gap-3 glass border border-border/50 rounded-full p-2 pl-6 focus-within:ring-2 focus-within:ring-primary/40 transition-all"
+          >
+            <Search className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search a GitHub handle..."
+              className="bg-transparent border-none outline-none flex-1 font-medium placeholder:text-muted-foreground/30 text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const val = (e.target as HTMLInputElement).value.trim();
+                  if (val) window.location.href = `/u/${val}`;
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="px-5 py-2.5 rounded-full bg-foreground text-background text-xs font-black hover:scale-105 active:scale-95 transition-all"
+              onClick={(e) => {
+                const input = (e.currentTarget.parentElement as HTMLFormElement).querySelector('input') as HTMLInputElement;
+                if (input.value.trim()) window.location.href = `/u/${input.value.trim()}`;
+              }}
+            >
+              View
+            </button>
+          </form>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32">
-            {users.length === 0 && (
-                <div className="col-span-full p-32 text-center rounded-[3rem] glass border-dashed">
-                    <p className="text-muted-foreground font-medium">The network is currently private. Be the first to launch your pulse.</p>
-                </div>
-            )}
-            {users.map((user) => (
-                <Link
-                    key={user.id}
-                    href={`/u/${user.username}`}
-                    className="group relative flex flex-col items-center justify-between p-12 rounded-[3.5rem] bg-secondary/5 border border-white/5 hover:border-primary/20 transition-all duration-700 h-96 overflow-hidden backdrop-blur-md"
-                >
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:scale-110 group-hover:opacity-[0.05] transition-all duration-1000">
-                        <Github size={200} />
-                    </div>
-                    
-                    <div className="w-40 h-40 rounded-[3rem] overflow-hidden border-[6px] border-background shadow-2xl ring-2 ring-primary/5 group-hover:ring-primary/20 transition-all duration-700 relative z-10">
-                        <img 
-                            src={user.avatar_url} 
-                            alt={user.username}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                        />
-                    </div>
+          {users.length === 0 && (
+            <div className="col-span-full p-32 text-center rounded-[3rem] glass border border-dashed border-border/40 flex flex-col items-center gap-6">
+              <Github className="w-12 h-12 text-muted-foreground/20" />
+              <div className="space-y-2">
+                <p className="font-black text-xl tracking-tight">Network is warming up</p>
+                <p className="text-muted-foreground font-medium text-sm max-w-sm">
+                  Be the first to launch your pulse and get featured in the global directory.
+                </p>
+              </div>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:scale-105 active:scale-95 transition-all"
+              >
+                Launch Yours <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
+          {users.map((user) => (
+            <Link
+              key={user.id}
+              href={`/u/${user.username}`}
+              className="group relative flex flex-col items-center justify-between p-12 rounded-[3.5rem] bg-secondary/5 border border-white/5 hover:border-primary/20 transition-all duration-700 h-96 overflow-hidden backdrop-blur-md"
+            >
+              <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:scale-110 group-hover:opacity-[0.05] transition-all duration-1000">
+                <Github size={200} />
+              </div>
 
-                    <div className="text-center space-y-2 relative z-10 mt-6 flex-1 flex flex-col items-center justify-center">
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mb-2">Live Board</span>
-                        <h3 className="text-3xl font-black tracking-tighter group-hover:text-primary transition-colors">
-                            @{user.username}
-                        </h3>
-                    </div>
+              <div className="w-40 h-40 rounded-[3rem] overflow-hidden border-[6px] border-background shadow-2xl ring-2 ring-primary/5 group-hover:ring-primary/20 transition-all duration-700 relative z-10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={user.avatar_url}
+                  alt={user.username}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+              </div>
 
-                    <div className="relative z-10 w-full pt-8 border-t border-white/5 flex items-center justify-center gap-3">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">View Pulse</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-                    </div>
-                </Link>
-            ))}
+              <div className="text-center space-y-2 relative z-10 mt-6 flex-1 flex flex-col items-center justify-center">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/40 mb-2">Live Board</span>
+                <h3 className="text-3xl font-black tracking-tighter group-hover:text-primary transition-colors">
+                  @{user.username}
+                </h3>
+              </div>
+
+              <div className="relative z-10 w-full pt-8 border-t border-white/5 flex items-center justify-center gap-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">View Pulse</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </Link>
+          ))}
         </section>
 
         <section className="p-16 rounded-[4rem] bg-foreground text-background flex flex-col md:flex-row items-center justify-between gap-12 group overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-12 text-background/10 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-1000">
-                <Zap size={240} />
-            </div>
-            <div className="space-y-6 max-w-xl relative z-10 text-center md:text-left">
-                <h2 className="text-5xl font-black tracking-tight leading-none">Join the transparency revolution.</h2>
-                <p className="text-background/60 font-medium text-lg leading-relaxed">
-                    Connect your stack, launch your dashboard, and get featured in the global directory.
-                </p>
-            </div>
-            <Link 
-                href="/dashboard" 
-                className="px-12 py-6 bg-primary text-primary-foreground rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20 relative z-10 whitespace-nowrap"
-            >
-                Launch your Pulse
-            </Link>
+          <div className="absolute top-0 right-0 p-12 text-background/10 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-1000">
+            <Zap size={240} />
+          </div>
+          <div className="space-y-6 max-w-xl relative z-10 text-center md:text-left">
+            <h2 className="text-5xl font-black tracking-tight leading-none">Join the transparency revolution.</h2>
+            <p className="text-background/60 font-medium text-lg leading-relaxed">
+              Connect your stack, launch your dashboard, and get featured in the global directory.
+            </p>
+          </div>
+          <Link
+            href="/dashboard"
+            className="px-12 py-6 bg-primary text-primary-foreground rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20 relative z-10 whitespace-nowrap"
+          >
+            Launch your Pulse
+          </Link>
         </section>
       </main>
 
