@@ -2,7 +2,7 @@
 
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { ArrowRight, Activity, Github, Zap, Globe, Shield, Sparkles, IndianRupee, Search } from "lucide-react";
+import { ArrowRight, Activity, Github, Zap, Globe, Shield, Sparkles, Search } from "lucide-react";
 import { PulseLogo } from "@/components/pulse-logo";
 import { motion, Variants } from "framer-motion";
 
@@ -83,7 +83,7 @@ export default function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            Building in Public 2.0
+            Verified Builder Protocol
           </motion.div>
           
           <motion.h1 
@@ -102,7 +102,7 @@ export default function Home() {
             transition={{ delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium mb-12"
           >
-            Automate your transparency. Connect your stack and launch a stunning metrics dashboard that updates as you ship. No manual work, just pure velocity.
+            Automate your professional transparency. Connect your stack and launch a verified metrics protocol that updates as you ship. No manual work, just pure credibility.
           </motion.p>
 
           <motion.div 
@@ -132,31 +132,8 @@ export default function Home() {
                 Launch <Search className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
             </form>
-            
-            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 mt-4">
-              {isLoaded && !isSignedIn && (
-                <SignInButton mode="modal">
-                  <button className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors group">
-                    <Github className="w-4 h-4" />
-                    <span>Connect your GitHub</span>
-                  </button>
-                </SignInButton>
-              )}
-              {isLoaded && isSignedIn && (
-                <Link href="/dashboard" className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors">
-                  <Activity className="w-4 h-4" />
-                  <span>Go to Console</span>
-                </Link>
-              )}
-              <Link href="/explore" className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors group border-l border-border/50 pl-6">
-                <Globe className="w-4 h-4" />
-                <span>Explore Network</span>
-              </Link>
-            </div>
           </motion.div>
         </section>
-
-
 
         <section className="w-full max-w-6xl px-6 pb-40">
           <motion.div 
@@ -177,15 +154,10 @@ export default function Home() {
                 <h3 className="text-3xl font-bold tracking-tight mb-4">GitHub Real-time Pulse</h3>
                 <p className="text-muted-foreground text-lg max-w-md font-medium">Your commit history, language distribution, and shipping velocity synced automatically. Turn your activity into authority.</p>
               </div>
-              <div className="flex flex-wrap gap-3 mt-8 relative z-10 w-full">
-                {['Commits', 'PRs', 'Stars'].map(tag => (
-                  <span key={tag} className="px-4 py-1.5 rounded-lg bg-primary/5 border border-primary/10 text-[10px] font-black uppercase tracking-widest text-primary/80 flex-1 text-center whitespace-nowrap">{tag}</span>
-                ))}
-              </div>
             </motion.div>
 
             <motion.div variants={itemVariants} className="glass-card p-10 flex flex-col justify-between group">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6 font-bold">
                 <Zap className="w-6 h-6" />
               </div>
               <div>
@@ -194,36 +166,23 @@ export default function Home() {
               </div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="glass-card p-10 flex flex-col justify-between group">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-6 font-bold">
-                <IndianRupee className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold tracking-tight mb-4">Growth Engines</h3>
-                <p className="text-muted-foreground font-medium">Stripe integration to showcase MRR and growth velocity with localized Indian currency support.</p>
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="glass-card p-10 flex flex-col justify-between md:col-span-2 relative overflow-hidden group">
-              <div className="absolute bottom-0 right-0 p-8 text-primary/5 transform translate-y-12">
-                <Shield size={180} strokeWidth={1} />
-              </div>
+            <motion.div variants={itemVariants} className="glass-card p-10 flex flex-col justify-between md:col-span-3 relative overflow-hidden group">
               <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-10">
                 <div className="flex-1">
                   <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-6">
                     <Globe className="w-6 h-6" />
                   </div>
-                  <h3 className="text-3xl font-bold tracking-tight mb-4">Public Reputation</h3>
-                  <p className="text-muted-foreground text-lg font-medium">Build trust by default. Your public pulse is a verifiable proof of work for investors and users.</p>
+                  <h3 className="text-3xl font-bold tracking-tight mb-4">Public Reputation Protocol</h3>
+                  <p className="text-muted-foreground text-lg font-medium">Build trust by default. Your public pulse is a verifiable proof of work for investors and the global tech ecosystem.</p>
                 </div>
                 <div className="flex flex-col gap-3">
                   <div className="glass px-6 py-4 rounded-2xl flex items-center gap-3">
                     <Sparkles className="w-5 h-5 text-yellow-500" />
-                    <span className="font-bold">Verified Metrics</span>
+                    <span className="font-bold">Verified Reputation</span>
                   </div>
                   <div className="glass px-6 py-4 rounded-2xl flex items-center gap-3 border-emerald-500/20">
                     <Activity className="w-5 h-5 text-emerald-500" />
-                    <span className="font-bold">Live Syncing</span>
+                    <span className="font-bold">Live Protocol</span>
                   </div>
                 </div>
               </div>
@@ -233,20 +192,14 @@ export default function Home() {
 
         <footer className="w-full max-w-7xl px-6 py-20 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
-            <PulseLogo className="w-5 h-5" />
-            <span className="font-bold">PulseBoard</span>
+            <PulseLogo className="w-5 h-5 opacity-50" />
+            <span className="font-bold tracking-tight opacity-50 uppercase text-xs">PulseBoard Protocol</span>
           </div>
-          <div className="flex gap-8 text-sm font-medium text-muted-foreground">
-            <Link href="https://pulseboard.dev/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="https://pulseboard.dev/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="https://x.com/pulseboard" className="hover:text-foreground transition-colors">Twitter</Link>
-          </div>
-          <div className="text-xs font-bold tracking-widest uppercase opacity-40">
-            THANKS
+          <div className="text-xs font-bold tracking-[0.6em] uppercase opacity-20">
+            THANKS FOR SHIPPING
           </div>
         </footer>
       </main>
     </div>
   );
 }
-

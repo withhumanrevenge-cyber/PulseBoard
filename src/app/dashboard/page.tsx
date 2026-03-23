@@ -40,10 +40,10 @@ export default function DashboardPage() {
         if (res) {
           setData(res);
         } else {
-          setError("GitHub connection required. Please verify your account link.");
+          setError("GitHub connection required.");
         }
       } catch (err) {
-        setError("Failed to sync metrics.");
+        setError("Sync failed.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -82,16 +82,9 @@ export default function DashboardPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <Link 
-            href="/user-profile"
-            className="p-2.5 rounded-full glass hover:bg-secondary/80 transition-all group"
-            title="Settings"
-          >
-            <Code className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-          </Link>
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2.5 rounded-full glass hover:bg-secondary/80 transition-all"
+            className="p-2.5 rounded-full glass hover:bg-secondary/80 transition-all font-bold"
           >
             <Zap className="w-4 h-4 fill-current text-primary/80" />
           </button>
@@ -123,7 +116,7 @@ export default function DashboardPage() {
               <span className="text-gradient capitalize">Dashboard</span>
             </h1>
             <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-lg leading-relaxed">
-              Your public pulse is syncing with your latest source contributions. Transparency is your greatest leverage.
+              Your public pulse is syncing your verified shipping velocity. Transparency is your greatest leverage.
             </p>
           </motion.div>
 
@@ -167,32 +160,6 @@ export default function DashboardPage() {
           </motion.div>
         </section>
 
-        {error && !loading && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-8 rounded-[2.5rem] glass border-primary/10 bg-primary/[0.02] flex flex-col md:flex-row items-center justify-between gap-8 group"
-          >
-            <div className="flex items-start gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                <Github size={28} />
-              </div>
-              <div className="space-y-1 text-center md:text-left">
-                <h3 className="text-xl font-bold tracking-tight">Connect your GitHub pulse</h3>
-                <p className="text-muted-foreground font-medium max-w-sm">We need to link your account to sync your commit velocity and open source metrics.</p>
-              </div>
-            </div>
-            
-            <Link 
-              href="/user-profile" 
-              className="flex items-center gap-2 px-8 py-4 glass bg-primary text-primary-foreground rounded-full font-bold hover:scale-105 active:scale-95 transition-all w-full md:w-auto justify-center"
-            >
-              <span>Connect GitHub</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </motion.div>
-        )}
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <AnimatePresence mode="popLayout">
           {cards.map((stat, i) => (
@@ -222,23 +189,7 @@ export default function DashboardPage() {
                     <div className="w-24 h-12 bg-muted/20 animate-pulse rounded-2xl" />
                   ) : stat.value}
                 </div>
-                {!loading && (
-                    <p className="mt-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">
-                        {stat.label.includes("Tech") ? "Primary Stack" : "Project Velocity"}
-                    </p>
-                )}
               </div>
-
-              {!loading && (
-                 <div className="relative z-10 pt-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                    <Sparkline 
-                        color={stat.color === "text-amber-500" ? "#f59e0b" : stat.color === "text-emerald-500" ? "#10b981" : stat.color === "text-blue-500" ? "#3b82f6" : "#a855f7"} 
-                        data={stat.label === "Total Stars" ? [5, 8, 12, 10, 18, 22, 28] : [100, 120, 90, 150, 200]}
-                        width={180}
-                        height={35}
-                    />
-                 </div>
-              )}
 
               <div className="absolute -bottom-16 -right-16 opacity-[0.02] group-hover:scale-110 group-hover:opacity-[0.05] transition-all duration-1000 rotate-12 -z-0">
                 <stat.icon size={220} />
@@ -252,23 +203,8 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+            className="w-full"
         >
-            <div className="p-12 rounded-[3.5rem] bg-gradient-to-tr from-blue-500/10 to-purple-500/10 border border-white/5 flex flex-col justify-between gap-10 group overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-12 text-primary/5 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-1000">
-                    <Zap size={180} />
-                </div>
-                <div className="space-y-4 max-w-xl relative z-10">
-                    <h2 className="text-4xl font-black tracking-tight leading-none">Unlock the MRR Pulse</h2>
-                    <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-                        Ready to show your growth? Connect Stripe to display your live MRR velocity with currency localization.
-                    </p>
-                </div>
-                <button className="px-10 py-5 bg-white text-black rounded-full font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/5 relative z-10 w-fit">
-                    Connect Stripe
-                </button>
-            </div>
-
             <div className="p-12 rounded-[3.5rem] bg-secondary/5 border border-white/5 flex flex-col justify-between gap-10 group overflow-hidden relative backdrop-blur-xl">
                 <div className="space-y-4 relative z-10">
                     <h2 className="text-4xl font-black tracking-tight leading-none">Reputation Control</h2>
@@ -276,7 +212,7 @@ export default function DashboardPage() {
                         Manage your public visibility. Toggling these hides your metrics from the global directory and API.
                     </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
                     {[
                       { label: "Hide Star Counts", icon: Star },
                       { label: "Hide Contributions", icon: GitCommit },
@@ -318,36 +254,22 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {data?.recentRepos.length === 0 && !loading && (
-                <div className="col-span-full p-20 text-center glass border-dashed rounded-[2rem]">
-                  <p className="text-muted-foreground font-medium">No recent activity detected. Connect repository to track.</p>
-                </div>
-              )}
               {data?.recentRepos.map((repo, i) => (
                 <motion.a
                   key={repo.name}
                   href={repo.url}
                   target="_blank"
-                  rel="noopener noreferrer"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   whileHover={{ y: -5, scale: 1.02 }}
                   transition={{ delay: 0.5 + i * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   className="group relative flex flex-col justify-between p-8 rounded-[2rem] bg-secondary/5 border border-white/5 hover:border-primary/40 hover:bg-secondary/10 transition-all duration-500 overflow-hidden backdrop-blur-sm"
                 >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:scale-110 group-hover:opacity-[0.05] transition-all duration-1000">
-                    <Github size={120} />
-                  </div>
-                  
                   <div className="relative z-10 flex justify-between items-start gap-4 mb-6">
                     <div className="space-y-1">
                       <span className="font-black text-2xl group-hover:text-primary transition-colors tracking-tight block">
                         {repo.name}
                       </span>
-                      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                         Updated {repo.updated}
-                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/5 border border-amber-500/10 group-hover:bg-amber-500/10 transition-colors">
@@ -381,4 +303,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
