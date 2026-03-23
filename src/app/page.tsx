@@ -118,17 +118,17 @@ export default function Home() {
                 const input = form.elements.namedItem('username') as HTMLInputElement;
                 if (input.value) window.location.href = `/u/${input.value}`;
               }}
-              className="flex items-center w-full glass border border-border/50 rounded-full p-2 pl-6 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all font-medium shadow-2xl shadow-primary/5"
+              className="flex items-center w-full glass border border-border/50 rounded-full p-2 pl-6 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all font-medium shadow-2xl shadow-primary/5 gap-2"
             >
-              <span className="text-muted-foreground/60 tracking-tight font-bold hidden sm:inline">pulseboard.dev/u/</span>
+              <span className="text-muted-foreground/60 tracking-tight font-bold hidden sm:inline flex-shrink-0">pulseboard.dev/u/</span>
               <input 
                 type="text" 
                 name="username"
                 placeholder="github_handle" 
-                className="bg-transparent border-none outline-none flex-1 font-black placeholder:text-muted-foreground/30 text-foreground ml-2 sm:ml-0"
+                className="bg-transparent border-none outline-none flex-1 min-w-0 font-black placeholder:text-muted-foreground/30 text-foreground"
                 required
               />
-              <button type="submit" className="group flex items-center justify-center px-6 py-3 rounded-full bg-foreground text-background font-bold tracking-tight hover:scale-105 active:scale-95 transition-all gap-2">
+              <button type="submit" className="flex-shrink-0 group flex items-center justify-center px-8 py-3 rounded-full bg-foreground text-background font-bold tracking-tight hover:scale-105 active:scale-95 transition-all gap-2 whitespace-nowrap">
                 Launch <Search className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
             </form>
