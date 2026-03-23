@@ -62,7 +62,7 @@ export async function getPublicGitHubData(username: string) {
       return acc;
     }, {} as Record<string, number>);
 
-    const topLanguage = Object.entries(langFrequency)
+    const topLanguage = (Object.entries(langFrequency) as [string, number][])
       .sort((a, b) => b[1] - a[1])[0]?.[0] || "TypeScript";
 
     return {
