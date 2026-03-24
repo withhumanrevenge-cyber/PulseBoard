@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Star, GitCommit, Code, Github, BadgeCheck, Zap } from "lucide-react";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { Star, GitCommit, Code, Github, BadgeCheck, Zap, ArrowRight, Activity, Shield, Rocket } from "lucide-react";
+import { SpotlightCard } from "./motion-kit";
 
 type GitHubProfile = {
   name: string | null | undefined;
@@ -16,6 +17,7 @@ type GitHubProfile = {
     stars: number | undefined;
     language: string | null | undefined;
     link: string;
+    homepage?: string | null;
   }>;
 };
 
@@ -29,176 +31,216 @@ export default function PublicProfileView({
   privacy?: { hideStars: boolean; hideContributions: boolean; hideTech: boolean };
 }) {
   const isVerified = profile.contributions > 100;
+  
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useSpring(useTransform(y, [-100, 100], [15, -15]), { damping: 30, stiffness: 300 });
+  const rotateY = useSpring(useTransform(x, [-100, 100], [-15, 15]), { damping: 30, stiffness: 300 });
+
+  function handleMouseMove(event: React.MouseEvent) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set(event.clientX - centerX);
+    y.set(event.clientY - centerY);
+  }
 
   const cards = [
-    { 
-      label: "Stars Earned", 
-      value: privacy.hideStars ? "—" : profile.totalStars.toLocaleString(), 
-      icon: Star, 
-      color: "text-amber-500", 
-      bg: "bg-amber-500/10" 
-    },
-    { 
-      label: "Contributions", 
-      value: privacy.hideContributions ? "—" : profile.contributions.toLocaleString(), 
-      icon: GitCommit, 
-      color: "text-emerald-500", 
-      bg: "bg-emerald-500/10" 
-    },
-    { 
-      label: "Top Tech", 
-      value: privacy.hideTech ? "Private" : profile.topLanguage, 
-      icon: Code, 
-      color: "text-cyan-500", 
-      bg: "bg-cyan-500/10" 
-    },
+    { label: "Stars Earned", value: privacy.hideStars ? "—" : profile.totalStars.toLocaleString(), icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Pulse Contributions", value: privacy.hideContributions ? "—" : profile.contributions.toLocaleString(), icon: GitCommit, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Identity Protocol", value: "Verified", icon: Shield, color: "text-purple-500", bg: "bg-purple-500/10" },
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden text-foreground selection:bg-primary/20">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-primary/5 rounded-[100%] blur-[120px] -z-10" />
-      
-      <main className="max-w-4xl mx-auto px-6 py-20">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-col items-center text-center space-y-8"
-        >
-          <div className="relative group">
-            <div className="w-40 h-40 rounded-[3rem] overflow-hidden border-[6px] border-background shadow-2xl ring-2 ring-primary/10 transition-transform group-hover:scale-105 duration-500">
+    <div className="min-h-screen bg-transparent relative overflow-hidden text-foreground selection:bg-primary/20">
+      <main className="max-w-5xl mx-auto px-6 py-24 md:py-32">
+        <section className="flex flex-col items-center text-center space-y-12">
+          <motion.div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => { x.set(0); y.set(0); }}
+            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+            className="relative group cursor-pointer"
+          >
+            <div className="w-48 h-48 rounded-[4rem] overflow-hidden border-[8px] border-background shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] ring-4 ring-primary/10 transition-all duration-700 bg-secondary/20">
               <img 
                 src={profile.avatarUrl} 
                 alt={profile.name || username} 
-                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700"
+                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-1000"
               />
             </div>
             {isVerified && (
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -bottom-2 -right-2 w-12 h-12 rounded-2xl bg-primary text-primary-foreground border-[6px] border-background shadow-xl flex items-center justify-center group-hover:rotate-12 transition-transform"
-                title="Consistency Guard Verified"
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1, rotate: 0 }}
+                className="absolute -bottom-3 -right-3 w-16 h-16 rounded-[1.5rem] bg-primary text-primary-foreground border-8 border-background shadow-2xl flex items-center justify-center translate-z-20"
               >
-                <BadgeCheck className="w-6 h-6" />
+                <BadgeCheck className="w-8 h-8" />
               </motion.div>
             )}
-          </div>
+            <div className="absolute inset-0 rounded-[4rem] bg-primary/20 blur-2xl opacity-0 group-hover:opacity-40 transition-opacity -z-10" />
+          </motion.div>
 
-          <div className="space-y-4">
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-6xl font-black tracking-tighter leading-none">
+          <div className="space-y-6 max-w-3xl">
+            <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex flex-col items-center gap-4"
+            >
+              <div className="flex items-center gap-4">
+                <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-none uppercase">
                   {profile.name || username}
                 </h1>
-                {isVerified && (
-                    <div className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        Verified
-                    </div>
-                )}
               </div>
-              <p className="text-sm font-black text-muted-foreground/30 uppercase tracking-[0.6em]">
-                {username}
-              </p>
-            </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.5em]">
+                  ID: <span className="font-light italic opacity-60">@{username}</span>
+                </span>
+                <div className="h-4 w-px bg-white/10" />
+                <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-1.5">
+                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                   Protocol Pulse Live
+                </div>
+              </div>
+            </motion.div>
             
             {profile.bio && (
-              <p className="text-xl text-muted-foreground max-w-lg mx-auto font-medium leading-relaxed italic border-l-2 border-primary/10 pl-6">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl md:text-2xl text-muted-foreground/60 max-w-2xl mx-auto font-normal leading-relaxed italic border-l-4 border-primary/10 pl-8 text-left md:text-center"
+              >
                 &ldquo;{profile.bio}&rdquo;
-              </p>
+              </motion.p>
             )}
             
-            <div className="flex items-center justify-center gap-4 pt-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap items-center justify-center gap-6 pt-6"
+            >
               <a 
                 href={`https://github.com/${username}`}
                 target="_blank"
-                className="flex items-center gap-3 px-10 py-5 bg-foreground text-background rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/5"
+                className="group flex items-center gap-4 px-12 py-5 bg-foreground text-background rounded-full font-bold text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.1)]"
               >
-                <Github className="w-4 h-4" />
-                Analyze Stack
+                <Github className="w-5 h-5" />
+                Analyze Artifacts
+                <ArrowRight className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
               </a>
               
               {!privacy.hideTech && (
-                <div className="px-6 py-5 glass border border-emerald-500/20 text-emerald-500 rounded-full flex items-center gap-2 shadow-2xl shadow-emerald-500/5 cursor-default hover:bg-emerald-500/5 transition-colors">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Open to build</span>
+                <div className="px-8 py-5 glass border border-primary/20 text-primary rounded-full flex items-center gap-3 shadow-xl cursor-default hover:bg-primary/5 transition-colors">
+                  <Activity className="w-5 h-5 animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Protocol Active</span>
                 </div>
               )}
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24">
-          {cards.map((card, i) => (
-            <motion.div
-              key={card.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + i * 0.1 }}
-              className="glass p-10 rounded-[3rem] border border-white/5 relative overflow-hidden group hover:border-primary/20 transition-all duration-500"
-            >
-              <div className={`absolute -top-12 -right-12 w-24 h-24 rounded-full blur-3xl opacity-10 ${card.bg}`} />
-              <div className="relative z-10 flex items-center justify-between mb-8">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{card.label}</span>
-                <div className={`p-3 rounded-2xl ${card.bg} ${card.color}`}>
-                  <card.icon className="w-5 h-5 flex-shrink-0" />
-                </div>
-              </div>
-              <div className="relative z-10 text-4xl font-black tracking-tighter">
-                {card.value}
-              </div>
             </motion.div>
-          ))}
-        </div>
+          </div>
+        </section>
 
-        <section className="mt-24 space-y-12">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/5">
-                <h2 className="text-3xl font-black tracking-tighter flex items-center gap-3">
-                    <Zap className="w-6 h-6 text-primary" />
-                    Verified Repos
-                </h2>
-                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">
-                    Showing latest public pulses
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-40">
+          {cards.map((card, i) => (
+            <SpotlightCard
+              key={card.label}
+              className="glass p-12 rounded-[4rem] border border-white/5 h-64 flex flex-col justify-between text-left"
+            >
+              <div className="h-full flex flex-col justify-between relative z-10">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground/30">{card.label}</span>
+                  <div className={`p-4 rounded-2xl ${card.bg} ${card.color} border border-white/5`}>
+                    <card.icon className="w-6 h-6" />
+                  </div>
                 </div>
+                <div className="text-5xl font-bold tracking-tight">
+                  {card.value}
+                </div>
+              </div>
+            </SpotlightCard>
+          ))}
+        </section>
+
+        <section className="mt-40 space-y-16">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b-2 border-white/5 text-left">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-primary text-[10px] font-bold uppercase tracking-[0.4em]">
+                    <Zap className="w-4.5 h-4.5" />
+                    Verified Output
+                  </div>
+                  <h2 className="text-5xl md:text-7xl font-bold tracking-tight uppercase">Recent <span className="font-light italic opacity-40">Artifacts</span></h2>
+                </div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-muted-foreground/20">Live Stream from Registry</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-40">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-40">
                 {profile.repos.map((repo, i) => (
-                    <motion.a
+                    <motion.div
                         key={repo.name}
-                        href={repo.link}
-                        target="_blank"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6 + i * 0.05 }}
-                        className="group p-8 rounded-[3rem] glass border border-white/5 hover:border-primary/20 hover:scale-[1.02] transition-all duration-500"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 + i * 0.05 }}
+                        className="group relative h-full"
                     >
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-2xl font-black tracking-tight">{repo.name}</h3>
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/5 text-amber-500 border border-amber-500/10">
-                                <Star className="w-3 h-3 fill-current" />
-                                <span className="text-xs font-black">{repo.stars}</span>
+                      <SpotlightCard className="p-10 rounded-[3.5rem] glass border border-white/5 h-full flex flex-col justify-between gap-8 text-left">
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                              <h3 className="text-3xl font-bold tracking-tight uppercase truncate max-w-[200px]">
+                                {repo.name}
+                              </h3>
+                              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/5 text-amber-500 border border-amber-500/10 shadow-inner">
+                                  <Star className="w-4 h-4 fill-current" />
+                                  <span className="text-xs font-bold">{repo.stars}</span>
+                              </div>
+                          </div>
+                          <p className="text-muted-foreground font-normal text-lg leading-relaxed line-clamp-2">
+                              {repo.description || "Historical engineering record verified by Pulse Protocol."}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col gap-5 pt-8 border-t border-white/5">
+                            <div className="flex flex-wrap items-center justify-between gap-4">
+                               <div className="flex flex-wrap gap-2">
+                                  {repo.language && (
+                                      <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary rounded-xl border border-primary/10">
+                                          <div className="w-2 h-2 rounded-full bg-primary" />
+                                          <span className="text-[10px] font-bold uppercase tracking-widest">{repo.language}</span>
+                                      </div>
+                                  )}
+                               </div>
+                               <ArrowRight className="w-5 h-5 text-white/5 group-hover:text-primary group-hover:translate-x-2 transition-all" />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              <a 
+                                href={repo.link} 
+                                target="_blank" 
+                                className="flex items-center gap-2 px-5 py-3 rounded-full hover:bg-secondary/50 glass border-white/5 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                              >
+                                <Github className="w-4 h-4 opacity-50" />
+                                Registry
+                              </a>
+                              {repo.homepage && (
+                                <a 
+                                  href={repo.homepage} 
+                                  target="_blank" 
+                                  className="flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                                >
+                                  <Rocket className="w-4 h-4" />
+                                  Deployed
+                                </a>
+                              )}
                             </div>
                         </div>
-                        <p className="text-muted-foreground font-medium text-sm line-clamp-2 mb-6">
-                            {repo.description || "Experimental builder rep pulse."}
-                        </p>
-                        <div className="flex items-center gap-2">
-                            {repo.language && (
-                                <span className="px-3 py-1 bg-primary/5 text-primary rounded-lg text-[9px] font-black uppercase tracking-widest">
-                                    {repo.language}
-                                </span>
-                            )}
-                        </div>
-                    </motion.a>
+                      </SpotlightCard>
+                    </motion.div>
                 ))}
             </div>
         </section>
       </main>
 
-      <footer className="py-20 text-center border-t border-white/5">
-        <p className="text-[10px] font-black uppercase tracking-[1em] opacity-10">Thanks for Shipping</p>
+      <footer className="py-32 text-center border-t border-white/5">
+        <p className="text-[10px] font-bold uppercase tracking-[1em] opacity-10">Thanks for Shipping</p>
       </footer>
     </div>
   );

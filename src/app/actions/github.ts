@@ -10,6 +10,7 @@ export interface GitHubRepo {
   language: string | null;
   updated: string;
   url: string;
+  homepage?: string | null;
 }
 
 export interface GitHubMetrics {
@@ -20,6 +21,8 @@ export interface GitHubMetrics {
   topLanguage: string;
   activeDays: string;
   recentRepos: GitHubRepo[];
+  languageMap: { name: string; percentage: number; color: string }[];
+  streak: number;
 }
 
 export async function getGitHubStats(): Promise<GitHubMetrics | null> {
@@ -45,18 +48,24 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
         per_page: 100,
         visibility: "all"
       }),
-      octokit.graphql<{ user: { contributionsCollection: { contributionCalendar: { totalContributions: number } } } }>(`
+      octokit.graphql<{ user: { contributionsCollection: { contributionCalendar: { totalContributions: number; weeks: any[] } } } }>(`
         query($login: String!) {
           user(login: $login) {
             contributionsCollection {
               contributionCalendar {
                 totalContributions
+                weeks {
+                   contributionDays {
+                      contributionCount
+                      date
+                   }
+                }
               }
             }
           }
         }
       `, { login: username }).catch(() => ({
-        user: { contributionsCollection: { contributionCalendar: { totalContributions: 0 } } }
+        user: { contributionsCollection: { contributionCalendar: { totalContributions: 0, weeks: [] } } }
       }))
     ]);
 
@@ -78,12 +87,39 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
       ? `${sortedLangs[0][0]} + ${sortedLangs[1][0]}`
       : sortedLangs[0]?.[0] || "TypeScript";
 
+    // Detailed Language Map
+    const totalWeight = Object.values(langMap).reduce((a, b) => a + b, 0);
+    const langColors: Record<string, string> = {
+      TypeScript: "#3178c6", JavaScript: "#f1e05a", Python: "#3572A5",
+      Go: "#00ADD8", Rust: "#dea584", "C++": "#f34b7d",
+      HTML: "#e34c26", CSS: "#563d7c", Ruby: "#701516", Swift: "#ffac45"
+    };
+
+    const languageMap = sortedLangs.slice(0, 5).map(([name, weight]) => ({
+      name,
+      percentage: Math.round((weight / totalWeight) * 100),
+      color: langColors[name] || "#" + Math.floor(Math.random()*16777215).toString(16)
+    }));
+
+    // Streak Calculation
+    let streak = 0;
+    const allDays = contributionResponse.user?.contributionsCollection?.contributionCalendar?.weeks
+      ?.flatMap(w => w.contributionDays)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
+    
+    for (const day of allDays) {
+      if (day.contributionCount > 0) streak++;
+      else break;
+    }
+
     const metrics: GitHubMetrics = {
       username,
       avatarUrl: allRepos[0]?.owner.avatar_url || "",
       totalStars,
       contributionCount,
       topLanguage,
+      streak,
+      languageMap,
       activeDays: `${Math.min(30, Math.ceil(contributionCount / 10))}/30`,
       recentRepos: allRepos.filter(r => !r.fork).slice(0, 12).map(repo => ({
         name: repo.name,
@@ -91,6 +127,7 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
         language: repo.language || null,
         updated: new Date(repo.updated_at || "").toLocaleDateString(),
         url: repo.html_url,
+        homepage: repo.homepage || null,
       })),
     };
 

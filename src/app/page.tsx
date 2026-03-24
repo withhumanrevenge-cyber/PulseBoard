@@ -1,202 +1,137 @@
 "use client";
 
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight, Globe, Github, Zap, Shield, Sparkles, Code, GitBranch, Terminal } from "lucide-react";
 import Link from "next/link";
-import { ArrowRight, Activity, Github, Zap, Globe, Shield, Sparkles, Search } from "lucide-react";
+import { BackgroundOrganism } from "@/components/motion-kit";
 import { PulseLogo } from "@/components/pulse-logo";
-import { motion, Variants } from "framer-motion";
+import { KineticSearch } from "@/components/kinetic-search";
+import { SmartAuthButton } from "@/components/smart-auth-button";
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.3,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
-      duration: 0.5, 
-      ease: [0.16, 1, 0.3, 1] 
-    } 
-  },
-};
-
-export default function Home() {
-  const { isSignedIn, isLoaded } = useUser();
+export default function LandingPage() {
+  const { user } = useUser();
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
 
   return (
-    <div className="flex flex-col min-h-screen selection:bg-primary/20">
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-float" style={{ animationDelay: "-3s" }} />
-      </div>
-
+    <div className="relative min-h-screen flex flex-col selection:bg-primary/20 bg-background text-foreground overflow-x-hidden">
       <header className="px-6 lg:px-14 h-20 flex items-center justify-between glass sticky top-0 z-50">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3 group"
-        >
-          <div className="p-2 rounded-xl bg-primary/5 group-hover:bg-primary/10 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-primary/5">
             <PulseLogo className="w-6 h-6 text-primary" />
           </div>
           <span className="text-xl font-bold tracking-tight">PulseBoard</span>
-        </motion.div>
-        
-        <nav className="flex items-center gap-6">
-          <Link href="/explore" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hidden md:block" aria-disabled={!isLoaded}>
-            Explore
+        </div>
+
+        <nav className="flex items-center gap-7">
+          <Link href="/explore" className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-all hidden md:block">
+            Directory
           </Link>
-          <div className="h-4 w-px bg-border/50 hidden md:block" />
-          {isLoaded && !isSignedIn && (
-            <SignInButton mode="modal">
-              <button className="relative group px-5 py-2 rounded-full bg-foreground text-background text-sm font-bold overflow-hidden transition-all hover:pr-8 hover:scale-105 active:scale-95">
-                <span>Sign In</span>
-                <ArrowRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-              </button>
-            </SignInButton>
-          )}
-          {isLoaded && isSignedIn && (
-            <Link href="/dashboard" className="px-5 py-2 rounded-full bg-foreground text-background text-sm font-bold hover:scale-105 active:scale-95 transition-all">
-              Console
-            </Link>
-          )}
+          <SmartAuthButton
+            className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-border/50 bg-foreground text-background text-[11px] font-semibold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all outline-none"
+          >
+            Console
+          </SmartAuthButton>
         </nav>
       </header>
 
-      <main className="flex-1 flex flex-col items-center">
-        <section className="relative w-full max-w-7xl px-6 pt-24 pb-32 flex flex-col items-center text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-primary/10 text-[10px] font-bold uppercase tracking-[0.2em] mb-8 text-primary/80"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            Verified Builder Protocol
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-6xl md:text-[7.5rem] font-black tracking-tight leading-[0.85] mb-8"
-          >
-            THE LIVE <br />
-            <span className="text-gradient">PULSEBOARD</span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium mb-12"
-          >
-            Automate your professional transparency. Connect your stack and launch a verified metrics protocol that updates as you ship. No manual work, just pure credibility.
-          </motion.p>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col items-center gap-6 w-full max-w-lg mx-auto"
-          >
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const input = form.elements.namedItem('username') as HTMLInputElement;
-                if (input.value) window.location.href = `/u/${input.value}`;
-              }}
-              className="flex items-center w-full glass border border-border/50 rounded-full p-2 pl-6 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all font-medium shadow-2xl shadow-primary/5 gap-2"
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 pt-32 pb-40 space-y-48">
+        <section className="relative min-h-[60vh] flex flex-col items-center justify-center text-center space-y-12">
+          <div className="space-y-8 flex flex-col items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold uppercase tracking-[0.4em] text-primary/80"
             >
-              <span className="text-muted-foreground/60 tracking-tight font-bold hidden sm:inline flex-shrink-0">pulseboard.dev/u/</span>
-              <input 
-                type="text" 
-                name="username"
-                placeholder="github_handle" 
-                className="bg-transparent border-none outline-none flex-1 min-w-0 font-black placeholder:text-muted-foreground/30 text-foreground"
-                required
-              />
-              <button type="submit" className="flex-shrink-0 group flex items-center justify-center px-8 py-3 rounded-full bg-foreground text-background font-bold tracking-tight hover:scale-105 active:scale-95 transition-all gap-2 whitespace-nowrap">
-                Launch <Search className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-              </button>
-            </form>
-          </motion.div>
-        </section>
-
-        <section className="w-full max-w-6xl px-6 pb-40">
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            <motion.div variants={itemVariants} className="md:col-span-2 glass-card p-10 flex flex-col justify-between min-h-[400px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 text-primary/5 group-hover:scale-110 group-hover:text-primary/10 transition-all duration-700">
-                <Github size={240} strokeWidth={1} />
-              </div>
-              <div className="relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 mb-6">
-                  <Github className="w-6 h-6" />
-                </div>
-                <h3 className="text-3xl font-bold tracking-tight mb-4">GitHub Real-time Pulse</h3>
-                <p className="text-muted-foreground text-lg max-w-md font-medium">Your commit history, language distribution, and shipping velocity synced automatically. Turn your activity into authority.</p>
-              </div>
+              <Terminal className="w-3.5 h-3.5" />
+              Verified Shipping Node
             </motion.div>
 
-            <motion.div variants={itemVariants} className="glass-card p-10 flex flex-col justify-between group">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6 font-bold">
-                <Zap className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold tracking-tight mb-4">Zero-Ops Setup</h3>
-                <p className="text-muted-foreground font-medium">Connect once, stay live forever. We handle the data syncing while you focus on building.</p>
-              </div>
-            </motion.div>
+            <h1 className="text-5xl md:text-[9rem] font-bold tracking-tighter leading-[0.85] flex flex-col items-center group">
+              <motion.span 
+                initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)" }}
+                animate={{ opacity: 1, clipPath: "inset(0 0% 0 0)" }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                className="block"
+              >
+                Welcome <span className="font-light italic text-muted-foreground/30 group-hover:text-primary/40 transition-colors duration-1000">to the</span>
+              </motion.span>
+              <motion.span 
+                initial={{ opacity: 0, clipPath: "inset(100% 0 0 0)" }}
+                animate={{ opacity: 1, clipPath: "inset(0% 0 0 0)" }}
+                transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="text-gradient font-black py-4"
+              >
+                PulseBoard
+              </motion.span>
+            </h1>
 
-            <motion.div variants={itemVariants} className="glass-card p-10 flex flex-col justify-between md:col-span-3 relative overflow-hidden group">
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-10">
-                <div className="flex-1">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-6">
-                    <Globe className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-3xl font-bold tracking-tight mb-4">Public Reputation Protocol</h3>
-                  <p className="text-muted-foreground text-lg font-medium">Build trust by default. Your public pulse is a verifiable proof of work for investors and the global tech ecosystem.</p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <div className="glass px-6 py-4 rounded-2xl flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-yellow-500" />
-                    <span className="font-bold">Verified Reputation</span>
-                  </div>
-                  <div className="glass px-6 py-4 rounded-2xl flex items-center gap-3 border-emerald-500/20">
-                    <Activity className="w-5 h-5 text-emerald-500" />
-                    <span className="font-bold">Live Protocol</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </section>
-
-        <footer className="w-full max-w-7xl px-6 py-20 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-3">
-            <PulseLogo className="w-5 h-5 opacity-50" />
-            <span className="font-bold tracking-tight opacity-50 uppercase text-xs">PulseBoard Protocol</span>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="text-muted-foreground text-xl md:text-2xl font-normal max-w-2xl mx-auto leading-relaxed"
+            >
+              Automate your professional transparency. Connect your stack and launch a verified metrics protocol that updates as you ship.
+            </motion.p>
           </div>
-          <div className="text-xs font-bold tracking-[0.6em] uppercase opacity-20">
-            THANKS FOR SHIPPING
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1, duration: 1 }}
+            className="w-full max-w-2xl"
+          >
+            <KineticSearch 
+              prefix="u/" 
+              placeholder="github_handle" 
+              buttonText="Access" 
+            />
+          </motion.div>
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8 pt-20">
+            <div className="space-y-6 group">
+                <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-700">
+                    <Zap className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight">Active Velocity</h3>
+                <p className="text-muted-foreground leading-relaxed">Real-time commit synchronization. Your reputation updates the moment you push to main.</p>
+            </div>
+            <div className="space-y-6 group">
+                <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-700">
+                    <Shield className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight">Verified Protocol</h3>
+                <p className="text-muted-foreground leading-relaxed">Cryptographically signed summaries of your work history. Trustless transparency for high-growth nodes.</p>
+            </div>
+            <div className="space-y-6 group">
+                <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-700">
+                    <Globe className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight">Global Directory</h3>
+                <p className="text-muted-foreground leading-relaxed">Get discovered by top engineering labs. Sort by shipping frequency, linguistic stack, and impact.</p>
+            </div>
+        </section>
+
+        <footer className="pt-20 border-t border-border/10 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 justify-center md:justify-start">
+               <PulseLogo className="w-5 h-5 opacity-20" />
+               <span className="text-[10px] font-bold uppercase tracking-[0.5em] opacity-20">Pulse System 0.1</span>
+            </div>
+            <p className="text-muted-foreground/40 text-sm max-w-sm">The decentralized standard for tracking developer shipping frequency and architectural velocity.</p>
+          </div>
+          <div className="flex items-center gap-12">
+             <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-20">Support</p>
+                <Link href="#" className="block text-sm font-semibold hover:text-primary transition-colors">Documentation</Link>
+             </div>
+             <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-20">Protocol</p>
+                <Link href="/explore" className="block text-sm font-semibold hover:text-primary transition-colors">Directory</Link>
+             </div>
           </div>
         </footer>
       </main>

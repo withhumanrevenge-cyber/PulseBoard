@@ -13,7 +13,6 @@ export async function getPublicGitHubData(username: string) {
   const octokit = new Octokit({ auth: token });
 
   try {
-    // Fetch User Profile and Stats via GraphQL for maximum accuracy (Lifetime data)
     const query = `
       query($login: String!) {
         user(login: $login) {
@@ -36,6 +35,7 @@ export async function getPublicGitHubData(username: string) {
                 name
               }
               url
+              homepageUrl
               isFork
             }
           }
@@ -48,15 +48,10 @@ export async function getPublicGitHubData(username: string) {
 
     if (!user) return null;
 
-    // Calculate total stars from ALL repositories (aggregating where possible)
-    // For large accounts, this is the most reliable way to get public star totals
     const repos = user.repositories.nodes || [];
     const totalStars = repos.reduce((acc: number, repo: any) => acc + (repo.stargazerCount || 0), 0);
-    
-    // Get Lifetime Contributions
     const contributions = user.contributionsCollection?.contributionCalendar?.totalContributions || 0;
 
-    // Determine Top Tech
     const langMap: Record<string, number> = {};
     repos.forEach((r: any) => {
       const lang = r.primaryLanguage?.name;
@@ -80,12 +75,11 @@ export async function getPublicGitHubData(username: string) {
           stars: repo.stargazerCount,
           language: repo.primaryLanguage?.name,
           link: repo.url,
+          homepage: repo.homepageUrl || null,
         })),
     };
   } catch (error: any) {
     console.error(`[github_live_data_error] ${username}:`, error.message);
-    
-    // Final emergency fallback if GraphQL fails but REST might work
     try {
         const { data: restUser } = await octokit.rest.users.getByUsername({ username });
         return {
