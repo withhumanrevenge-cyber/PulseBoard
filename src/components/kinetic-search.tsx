@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Terminal } from "lucide-react";
 import { useState, useRef } from "react";
 
 interface KineticSearchProps {
@@ -53,18 +53,26 @@ export function KineticSearch({
       
       <div 
         data-cursor="button"
-        className={`relative flex items-center w-full p-2 h-20 glass rounded-full transition-all duration-500 overflow-hidden border ${isFocused ? 'border-primary/50 shadow-[0_0_50px_-10px_rgba(var(--primary-rgb),0.5)]' : 'border-white/10'}`}
+        className={`relative flex items-center w-full p-2 h-24 bg-white rounded-full transition-all duration-500 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden ${isFocused ? 'ring-1 ring-primary/50' : ''}`}
       >
         <motion.div 
           style={{ x: magneticX, y: magneticY }}
-          className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-full" 
+          className="absolute inset-0 bg-gradient-to-r from-black/[0.02] via-transparent to-black/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-full" 
         />
         
-        <div className="flex-1 flex items-center pl-10 gap-4 z-10">
+        <div className="flex-1 flex items-center pl-12 gap-6 z-10">
+          <motion.div
+            animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+            className="p-3 rounded-2xl bg-black/5 text-black"
+          >
+             <Terminal size={18} />
+          </motion.div>
+
           {prefix && (
             <motion.span 
               style={{ x: useTransform(magneticX, (v) => v * 0.4) }}
-              className={`text-[11px] font-bold tracking-tight transition-colors duration-500 uppercase flex-shrink-0 ${isFocused ? 'text-primary' : 'text-muted-foreground/30'}`}
+              className={`text-[11px] font-black tracking-widest transition-colors duration-500 uppercase flex-shrink-0 ${isFocused ? 'text-primary' : 'text-black/20'}`}
             >
               {prefix}
             </motion.span>
@@ -100,22 +108,16 @@ export function KineticSearch({
             const input = containerRef.current?.querySelector('input');
             if (input?.value) window.location.href = `/u/${input.value}`;
           }}
-          className="relative flex-shrink-0 flex items-center justify-center px-12 h-full rounded-2xl bg-foreground text-background font-bold uppercase text-[11px] tracking-[0.2em] transition-all z-20 overflow-hidden group/btn ml-4"
+          className="relative flex-shrink-0 flex items-center justify-center px-12 h-20 rounded-full bg-black text-white font-black uppercase text-[10px] tracking-[0.2em] transition-all z-20 overflow-hidden group/btn mr-2"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
           
           <span className="relative flex items-center gap-3">
-            {buttonText} <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-2 transition-transform duration-500" />
+            {buttonText} <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-2 transition-transform duration-500" />
           </span>
         </motion.button>
       </div>
       
-      <motion.div 
-        animate={{ opacity: isFocused ? 0.3 : 0 }}
-        className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-[0.4em] uppercase text-muted-foreground"
-      >
-        Launch Protocol
-      </motion.div>
     </motion.div>
   );
 }

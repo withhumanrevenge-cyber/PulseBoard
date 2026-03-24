@@ -30,15 +30,14 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const client = await clerkClient();
-  const oauthToken = await client.users.getUserOauthAccessToken(userId, "oauth_github");
-
-  if (!oauthToken || oauthToken.data.length === 0) return null;
-
-  const token = oauthToken.data[0].token;
-  const octokit = new Octokit({ auth: token });
-
   try {
+    const client = await clerkClient();
+    const oauthToken = await client.users.getUserOauthAccessToken(userId, "oauth_github");
+
+    if (!oauthToken || oauthToken.data.length === 0) return null;
+
+    const token = oauthToken.data[0].token;
+    const octokit = new Octokit({ auth: token });
     const username = (await octokit.rest.users.getAuthenticated()).data.login;
 
     const [allRepos, contributionResponse] = await Promise.all([

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getPublicGitHubData } from "@/app/actions/public-github";
-import PublicProfileView from "@/components/public-profile-view";
+import { PublicProfileView } from "@/components/public-profile-view";
 import { Activity } from "lucide-react";
 
 export const revalidate = 300;
@@ -45,23 +45,12 @@ export default async function PublicPage(props: PageProps) {
     );
   }
 
-  let privacy = { hideStars: false, hideContributions: false, hideTech: false };
-  try {
-    const { supabase } = await import("@/lib/supabase");
-    if (supabase) {
-      const { data } = await supabase
-        .from("users")
-        .select("privacy_settings")
-        .eq("username", id)
-        .maybeSingle();
-      
-      if (data?.privacy_settings) {
-        privacy = data.privacy_settings;
-      }
-    }
-  } catch (err) {
-    console.warn("[privacy_registry_bypass]", err);
-  }
-
-  return <PublicProfileView username={id} profile={profile} privacy={privacy} />;
+  return (
+    <PublicProfileView 
+      username={id} 
+      profile={profile as any} 
+      repos={(profile as any).repos || []} 
+      privacy={{ hideTech: false }} 
+    />
+  );
 }
