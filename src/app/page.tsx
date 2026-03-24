@@ -48,20 +48,20 @@ export default function LandingPage() {
               Verified Shipping Node
             </motion.div>
 
-            <h1 className="text-5xl md:text-[9rem] font-bold tracking-tighter leading-[0.85] flex flex-col items-center group">
+            <h1 className="text-6xl md:text-[11rem] font-bold tracking-[-0.04em] leading-[0.85] flex flex-col items-center group">
               <motion.span 
-                initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)" }}
-                animate={{ opacity: 1, clipPath: "inset(0 0% 0 0)" }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 className="block"
               >
-                Welcome <span className="font-light italic text-muted-foreground/30 group-hover:text-primary/40 transition-colors duration-1000">to the</span>
+                Welcome <span className="font-light italic text-muted-foreground/20 group-hover:text-primary/40 transition-colors duration-1000 tracking-tight">to the</span>
               </motion.span>
               <motion.span 
-                initial={{ opacity: 0, clipPath: "inset(100% 0 0 0)" }}
-                animate={{ opacity: 1, clipPath: "inset(0% 0 0 0)" }}
-                transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="text-gradient font-black py-4"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="text-gradient font-black py-4 tracking-[-0.06em]"
               >
                 PulseBoard
               </motion.span>
@@ -91,28 +91,41 @@ export default function LandingPage() {
           </motion.div>
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8 pt-20">
-            <div className="space-y-6 group">
-                <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-700">
-                    <Zap className="w-6 h-6" />
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-10 pt-20">
+            {[
+              { title: "Active Velocity", desc: "Real-time commit synchronization. Your reputation updates the moment you push to main.", icon: Zap, label: "0.1MS SYNC" },
+              { title: "Verified Protocol", desc: "Cryptographically signed summaries of your work history. Trustless transparency for nodes.", icon: Shield, label: "ENCRYPTED" },
+              { title: "Global Directory", desc: "Get discovered by top engineering labs. Sort by shipping frequency and linguistic stack.", icon: Globe, label: "NETWORK" },
+            ].map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="group h-full"
+              >
+                <div className="p-10 rounded-[3rem] bg-secondary/5 border border-black/[0.03] hover:border-black/[0.08] hover:bg-secondary/10 transition-all duration-700 h-full flex flex-col justify-between space-y-8 relative overflow-hidden">
+                  <div className="space-y-6 relative z-10">
+                    <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-2xl">
+                        <f.icon className="w-6 h-6" />
+                    </div>
+                    <div className="space-y-2">
+                       <div className="text-[10px] font-black tracking-[0.3em] text-black/20 uppercase">{f.label}</div>
+                       <h3 className="text-3xl font-bold tracking-tight">{f.title}</h3>
+                    </div>
+                    <p className="text-muted-foreground/80 leading-relaxed font-normal">{f.desc}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 pt-4 opacity-0 group-hover:opacity-100 transition-all duration-700 -translate-x-4 group-hover:translate-x-0">
+                     <div className="h-px w-8 bg-black/20" />
+                     <span className="text-[9px] font-bold uppercase tracking-widest">Active Node</span>
+                  </div>
+
+                  <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-black/[0.02] rounded-full blur-3xl group-hover:bg-primary/5 transition-all duration-1000" />
                 </div>
-                <h3 className="text-2xl font-bold tracking-tight">Active Velocity</h3>
-                <p className="text-muted-foreground leading-relaxed">Real-time commit synchronization. Your reputation updates the moment you push to main.</p>
-            </div>
-            <div className="space-y-6 group">
-                <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-700">
-                    <Shield className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight">Verified Protocol</h3>
-                <p className="text-muted-foreground leading-relaxed">Cryptographically signed summaries of your work history. Trustless transparency for high-growth nodes.</p>
-            </div>
-            <div className="space-y-6 group">
-                <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-700">
-                    <Globe className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight">Global Directory</h3>
-                <p className="text-muted-foreground leading-relaxed">Get discovered by top engineering labs. Sort by shipping frequency, linguistic stack, and impact.</p>
-            </div>
+              </motion.div>
+            ))}
         </section>
 
         <footer className="pt-20 border-t border-border/10 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
