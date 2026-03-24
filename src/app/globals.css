@@ -25,31 +25,26 @@
   }
 
   .dark {
-  --background: #0a0a0c;
-  --foreground: #f0f0f2;
-  --card: #0d0d10;
-  --card-foreground: #f0f0f2;
-  --popover: #0a0a0c;
-  --popover-foreground: #f0f0f2;
-  --primary: #ffffff;
-  --primary-foreground: #0a0a0c;
-  --secondary: #1a1a1f;
-  --secondary-foreground: #f0f0f2;
-  --muted: #1a1a1f;
-  --muted-foreground: #a1a1aa;
-  --accent: #1a1a1f;
-  --accent-foreground: #f0f0f2;
-  --destructive: #7f1d1d;
-  --destructive-foreground: #f0f0f2;
-  --border: #1f1f23;
-  --input: #1f1f23;
-  --ring: #d4d4d8;
-  --chart-1: #3b82f6;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #8b5cf6;
-  --chart-5: #ec4899;
-}
+    --background: #0a0a0c;
+    --foreground: #f0f0f2;
+    --card: #0d0d10;
+    --card-foreground: #f0f0f2;
+    --popover: #0a0a0c;
+    --popover-foreground: #f0f0f2;
+    --primary: #ffffff;
+    --primary-foreground: #0a0a0c;
+    --secondary: #1a1a1f;
+    --secondary-foreground: #f0f0f2;
+    --muted: #1a1a1f;
+    --muted-foreground: #a1a1aa;
+    --accent: #1a1a1f;
+    --accent-foreground: #f0f0f2;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #f0f0f2;
+    --border: #1f1f23;
+    --input: #1f1f23;
+    --ring: #d4d4d8;
+  }
 }
 
 @theme inline {
@@ -73,8 +68,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius-xl: var(--radius);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-outfit);
   
   --animate-shimmer: shimmer 2s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
@@ -107,7 +101,6 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Subtle Grain Effect */
 body::before {
   content: "";
   position: fixed;
@@ -120,4 +113,3 @@ body::before {
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
-

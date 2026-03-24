@@ -27,14 +27,12 @@ export interface GitHubMetrics {
 
 export async function getGitHubStats(): Promise<GitHubMetrics | null> {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized access attempt");
+  if (!userId) throw new Error("Unauthorized");
 
   const client = await clerkClient();
   const oauthToken = await client.users.getUserOauthAccessToken(userId, "oauth_github");
 
-  if (!oauthToken || oauthToken.data.length === 0) {
-    return null;
-  }
+  if (!oauthToken || oauthToken.data.length === 0) return null;
 
   const token = oauthToken.data[0].token;
   const octokit = new Octokit({ auth: token });
@@ -75,19 +73,15 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
     const langMap: Record<string, number> = {};
     allRepos.forEach(r => {
       if (r.language) {
-
-        const weight = (r.stargazers_count || 0) + 1;
-        langMap[r.language] = (langMap[r.language] || 0) + weight;
+        langMap[r.language] = (langMap[r.language] || 0) + (r.stargazers_count || 0) + 1;
       }
     });
-
 
     const sortedLangs = Object.entries(langMap).sort((a, b) => b[1] - a[1]);
     const topLanguage = sortedLangs.length > 1
       ? `${sortedLangs[0][0]} + ${sortedLangs[1][0]}`
       : sortedLangs[0]?.[0] || "TypeScript";
 
-    // Detailed Language Map
     const totalWeight = Object.values(langMap).reduce((a, b) => a + b, 0);
     const langColors: Record<string, string> = {
       TypeScript: "#3178c6", JavaScript: "#f1e05a", Python: "#3572A5",
@@ -101,7 +95,6 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
       color: langColors[name] || "#" + Math.floor(Math.random()*16777215).toString(16)
     }));
 
-    // Streak Calculation
     let streak = 0;
     const allDays = contributionResponse.user?.contributionsCollection?.contributionCalendar?.weeks
       ?.flatMap(w => w.contributionDays)
@@ -144,7 +137,7 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
 
     return metrics;
   } catch (error) {
-    console.error("[github_sync_error]", error instanceof Error ? error.message : error);
+    console.error("[registry_sync]", error instanceof Error ? error.message : error);
     return null;
   }
 }

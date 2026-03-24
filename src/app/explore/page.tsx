@@ -9,13 +9,7 @@ import { SmartAuthButton } from "@/components/smart-auth-button";
 export const revalidate = 600;
 
 export default async function ExplorePage() {
-  let users: { id: string; username: string; avatar_url: string }[] = [];
-
-  try {
-    users = await getExploreUsers();
-  } catch {
-    users = [];
-  }
+  const users = await getExploreUsers().catch(() => []);
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-primary/20 bg-background text-foreground">

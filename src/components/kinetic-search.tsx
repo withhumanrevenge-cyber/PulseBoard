@@ -49,14 +49,12 @@ export function KineticSearch({
       transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-2xl mx-auto relative group"
     >
-      {/* Background Pulse Shadow */}
       <div className={`absolute -inset-8 bg-primary/10 rounded-[4rem] blur-[60px] transition-opacity duration-700 ${isFocused ? 'opacity-60' : 'opacity-0'}`} />
       
       <div 
         data-cursor="button"
-        className={`relative flex items-center w-full p-2 h-20 glass-card rounded-full transition-all duration-500 overflow-hidden border ${isFocused ? 'border-primary/50 shadow-[0_0_50px_-10px_rgba(var(--primary-rgb),0.5)]' : 'border-white/10'}`}
+        className={`relative flex items-center w-full p-2 h-20 glass rounded-full transition-all duration-500 overflow-hidden border ${isFocused ? 'border-primary/50 shadow-[0_0_50px_-10px_rgba(var(--primary-rgb),0.5)]' : 'border-white/10'}`}
       >
-        {/* Animated Glow Border */}
         <motion.div 
           style={{ x: magneticX, y: magneticY }}
           className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-full" 
@@ -77,7 +75,7 @@ export function KineticSearch({
               e.preventDefault();
               const form = e.target as HTMLFormElement;
               const input = form.elements.namedItem('username') as HTMLInputElement;
-              if (input.value) window.location.href = `/u/${input.value}`;
+              if (input?.value) window.location.href = `/u/${input.value}`;
             }}
             className="flex-1"
           >

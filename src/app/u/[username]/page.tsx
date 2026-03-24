@@ -5,7 +5,12 @@ import { Activity } from "lucide-react";
 
 export const revalidate = 300;
 
-export async function generateMetadata(props: { params: Promise<{ username: string }> }): Promise<Metadata> {
+interface PageProps {
+  params: Promise<{ username: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { username } = await props.params;
   const id = username === "demo" ? "levelsio" : username;
   const profile = await getPublicGitHubData(id);
@@ -14,16 +19,15 @@ export async function generateMetadata(props: { params: Promise<{ username: stri
 
   return {
     title: `${profile.name || username}'s Live Pulse | PulseBoard`,
-    description: `Track ${profile.name || username}'s shipping velocity, open source contributions, and tech stack in real-time. Transparent building starts here.`,
+    description: `Track ${profile.name || username}'s shipping velocity, open source contributions, and tech stack in real-time.`,
     openGraph: {
       images: [profile.avatarUrl],
     },
   };
 }
 
-export default async function PublicPage(props: { params: Promise<{ username: string }> }) {
+export default async function PublicPage(props: PageProps) {
   const { username } = await props.params;
-  
   const id = username === "demo" ? "levelsio" : username;
   const profile = await getPublicGitHubData(id);
 
@@ -41,20 +45,22 @@ export default async function PublicPage(props: { params: Promise<{ username: st
     );
   }
 
-  // Fetch Privacy Settings from Supabase
   let privacy = { hideStars: false, hideContributions: false, hideTech: false };
-  const { supabase } = await import("@/lib/supabase");
-  
-  if (supabase) {
-    const { data } = await supabase
-      .from("users")
-      .select("privacy_settings")
-      .eq("username", id)
-      .single();
-    
-    if (data?.privacy_settings) {
-      privacy = data.privacy_settings;
+  try {
+    const { supabase } = await import("@/lib/supabase");
+    if (supabase) {
+      const { data } = await supabase
+        .from("users")
+        .select("privacy_settings")
+        .eq("username", id)
+        .maybeSingle();
+      
+      if (data?.privacy_settings) {
+        privacy = data.privacy_settings;
+      }
     }
+  } catch (err) {
+    console.warn("[privacy_registry_bypass]", err);
   }
 
   return <PublicProfileView username={id} profile={profile} privacy={privacy} />;

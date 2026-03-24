@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export function BackgroundOrganism() {
   const mouseX = useMotionValue(0);
@@ -12,16 +12,13 @@ export function BackgroundOrganism() {
   const springY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    // Desktop: Mouse Move
     const handleMouseMove = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
     };
 
-    // Mobile: Device Orientation (Accelerometer)
     const handleOrientation = (e: DeviceOrientationEvent) => {
       if (!e.gamma || !e.beta) return;
-      // Map tilt to pseudo-mouse coordinates
       mouseX.set((e.gamma + 90) * (window.innerWidth / 180));
       mouseY.set((e.beta + 180) * (window.innerHeight / 360));
     };
