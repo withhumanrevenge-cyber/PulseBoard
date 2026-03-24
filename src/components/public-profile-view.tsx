@@ -166,28 +166,32 @@ export default function PublicProfileView({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 + i * 0.05, duration: 0.8 }}
                     >
-                      <SpotlightCard className="p-10 rounded-[3.5rem] glass border border-white/5 h-[28rem] flex flex-col justify-between relative z-10 group">
-                        <div className="space-y-6">
-                          <div className="flex items-start justify-between gap-4">
-                              <h3 className="text-2xl font-bold tracking-tight uppercase leading-tight group-hover:text-primary transition-colors">
-                                {repo.name}
-                              </h3>
-                              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/5 text-amber-500 border border-amber-500/10 shadow-inner shrink-0 mt-1">
-                                  <Star className="w-3.5 h-3.5 fill-current" />
-                                  <span className="text-xs font-black">{repo.stars ?? 0}</span>
-                              </div>
-                          </div>
-                          <p className="text-muted-foreground/60 font-normal text-lg leading-relaxed line-clamp-3">
-                              {repo.description || "No description provided."}
-                          </p>
+                      <SpotlightCard className="p-8 rounded-[3rem] glass border border-white/5 h-[22rem] flex flex-col justify-between relative z-10 group overflow-hidden">
+                        <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <h3 className="text-xl font-bold tracking-tight uppercase truncate leading-tight flex-1" title={repo.name}>
+                          {repo.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/[0.03] border border-black/[0.05] group-hover:bg-primary/5 transition-colors">
+                          <Star className="w-3 h-3 text-primary fill-current" />
+                          <span className="text-[10px] font-bold">{repo.stars}</span>
                         </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.03] border border-black/[0.05]">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-black/40">{repo.language || 'Code'}</span>
+                        </div>
+                      </div>
+
+                      <p className="text-muted-foreground/60 text-[11px] leading-relaxed line-clamp-3 min-h-[3rem]">
+                        {repo.description || "Experimental engineering node. No public documentation provided."}
+                      </p>
+                    </div>
 
                         <div className="space-y-6 pt-6 border-t border-white/5">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 text-primary rounded-lg border border-primary/10 text-[9px] font-bold uppercase tracking-widest">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                    {repo.language || "Code"}
-                                </div>
+                            <div className="flex items-center justify-end">
                                 <ArrowRight className="w-4 h-4 text-white/10 group-hover:text-primary group-hover:translate-x-2 transition-all" />
                             </div>
 
