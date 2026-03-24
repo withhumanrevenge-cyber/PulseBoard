@@ -1,8 +1,33 @@
 "use client";
 
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { Star, GitCommit, Github, BadgeCheck, Zap, ArrowRight, Activity, Shield, Rocket } from "lucide-react";
 import { SpotlightCard } from "./motion-kit";
+import { verifyDeployment } from "@/app/actions/verify-deployment";
+import { useEffect, useState } from "react";
+import { ReputationCard } from "./reputation-card";
+import { getWeeklyContributions } from "@/app/actions/github";
+
+function DeploymentBadge({ url }: { url: string }) {
+  const [isLive, setIsLive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function check() {
+      const result = await verifyDeployment(url);
+      setIsLive(result);
+    }
+    check();
+  }, [url]);
+
+  if (!isLive) return null;
+
+  return (
+    <div className="absolute top-2 right-2 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center gap-1.5 shadow-sm">
+      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <span className="text-[7px] font-black uppercase tracking-widest text-emerald-500">Live</span>
+    </div>
+  );
+}
 
 type GitHubProfile = {
   name: string | null | undefined;
@@ -31,6 +56,16 @@ export default function PublicProfileView({
   privacy?: { hideStars: boolean; hideContributions: boolean; hideTech: boolean };
 }) {
   const isVerified = (profile.contributions ?? 0) > 100;
+  const [showCard, setShowCard] = useState(false);
+  const [weeklyData, setWeeklyData] = useState<number[]>([]);
+
+  useEffect(() => {
+    async function loadWeekly() {
+      const data = await getWeeklyContributions(username);
+      setWeeklyData(data);
+    }
+    loadWeekly();
+  }, [username]);
   
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -120,9 +155,29 @@ export default function PublicProfileView({
                   <span className="text-[10px] font-bold uppercase tracking-widest">{profile.topLanguage}</span>
                 </div>
               )}
+
+              <button 
+                onClick={() => setShowCard(true)}
+                className="group px-8 py-5 rounded-full border border-white/10 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] hover:text-white hover:border-white/20 hover:scale-105 active:scale-95 transition-all outline-none"
+              >
+                Export Identity
+              </button>
             </div>
           </div>
         </section>
+
+        <AnimatePresence>
+          {showCard && (
+            <ReputationCard 
+              username={username}
+              avatarUrl={profile.avatarUrl}
+              totalStars={profile.totalStars}
+              topLanguage={profile.topLanguage}
+              weeklyContributions={weeklyData}
+              onClose={() => setShowCard(false)}
+            />
+          )}
+        </AnimatePresence>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-48">
           {stats.map((stat) => (
@@ -205,14 +260,17 @@ export default function PublicProfileView({
                                 Registry
                               </a>
                               {repo.homepage && (
-                                <a 
-                                  href={repo.homepage} 
-                                  target="_blank" 
-                                  className="flex-1 flex items-center justify-center gap-2.5 py-4 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
-                                >
-                                  <Rocket className="w-4 h-4" />
-                                  Deployed
-                                </a>
+                                <div className="flex-1 relative">
+                                  <a 
+                                    href={repo.homepage} 
+                                    target="_blank" 
+                                    className="w-full flex items-center justify-center gap-2.5 py-4 rounded-xl bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                                  >
+                                    <Rocket className="w-4 h-4" />
+                                    Deployed
+                                  </a>
+                                  <DeploymentBadge url={repo.homepage} />
+                                </div>
                               )}
                             </div>
                         </div>

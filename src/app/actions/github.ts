@@ -23,6 +23,7 @@ export interface GitHubMetrics {
   recentRepos: GitHubRepo[];
   languageMap: { name: string; percentage: number; color: string }[];
   streak: number;
+  weeklyContributions: number[];
 }
 
 export async function getGitHubStats(): Promise<GitHubMetrics | null> {
@@ -97,13 +98,17 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
 
     let streak = 0;
     const allDays = contributionResponse.user?.contributionsCollection?.contributionCalendar?.weeks
-      ?.flatMap(w => w.contributionDays)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
+      ?.flatMap((w: any) => w.contributionDays)
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
     
     for (const day of allDays) {
       if (day.contributionCount > 0) streak++;
       else break;
     }
+
+    const weeklyContributions = contributionResponse.user?.contributionsCollection?.contributionCalendar?.weeks
+      ?.slice(-7)
+      .map((w: any) => w.contributionDays.reduce((acc: number, d: any) => acc + d.contributionCount, 0)) || [0, 0, 0, 0, 0, 0, 0];
 
     const metrics: GitHubMetrics = {
       username,
@@ -113,6 +118,7 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
       topLanguage,
       streak,
       languageMap,
+      weeklyContributions,
       activeDays: `${Math.min(30, Math.ceil(contributionCount / 10))}/30`,
       recentRepos: allRepos.filter(r => !r.fork).slice(0, 12).map(repo => ({
         name: repo.name,
@@ -139,5 +145,32 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
   } catch (error) {
     console.error("[registry_sync]", error instanceof Error ? error.message : error);
     return null;
+  }
+}
+
+export async function getWeeklyContributions(username: string): Promise<number[]> {
+  try {
+    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+    const response = await octokit.graphql<{ user: { contributionsCollection: { contributionCalendar: { weeks: any[] } } } }>(`
+      query($login: String!) {
+        user(login: $login) {
+          contributionsCollection {
+            contributionCalendar {
+              weeks {
+                 contributionDays {
+                    contributionCount
+                 }
+              }
+            }
+          }
+        }
+      }
+    `, { login: username });
+
+    return response.user?.contributionsCollection?.contributionCalendar?.weeks
+      ?.slice(-7)
+      .map((w: any) => w.contributionDays.reduce((acc: number, d: any) => acc + d.contributionCount, 0)) || [0, 1, 0, 1, 0, 1, 0];
+  } catch (err) {
+    return [0, 0, 0, 0, 0, 0, 0];
   }
 }

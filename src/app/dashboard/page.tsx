@@ -7,8 +7,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getGitHubStats, GitHubMetrics } from "@/app/actions/github";
 import { getSettings } from "@/app/actions/privacy";
-import { Sparkline } from "@/components/sparkline";
 import { SpotlightCard } from "@/components/motion-kit";
+import { Sparkline } from "@/components/sparkline";
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -239,8 +239,20 @@ export default function DashboardPage() {
                         <stat.icon className="w-6 h-6" />
                       </div>
                     </div>
-                    <div className="text-5xl font-bold tracking-tight">
-                      {loading ? <div className="w-24 h-12 bg-muted/20 animate-pulse rounded-2xl" /> : stat.value}
+                    <div className="flex items-end justify-between">
+                      <div className="text-5xl font-bold tracking-tight">
+                        {loading ? <div className="w-24 h-12 bg-muted/20 animate-pulse rounded-2xl" /> : stat.value}
+                      </div>
+                      {data?.weeklyContributions && (stat.label === "Stars Earned" || stat.label === "Pulse Contributions") && (
+                        <div className="pb-2">
+                           <Sparkline 
+                            data={data.weeklyContributions} 
+                            color={stat.color.replace('text-', '').split('-')[0] === 'emerald' ? '#10b981' : '#f59e0b'} 
+                            width={100} 
+                            height={32} 
+                           />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </SpotlightCard>

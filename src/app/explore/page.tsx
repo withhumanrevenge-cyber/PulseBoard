@@ -2,9 +2,8 @@ import { getExploreUsers } from "@/app/actions/explore";
 import Link from "next/link";
 import { ArrowRight, Globe, Github, Zap } from "lucide-react";
 import { PulseLogo } from "@/components/pulse-logo";
-import { ExploreGrid } from "@/components/explore-grid";
-import { KineticSearch } from "@/components/kinetic-search";
 import { SmartAuthButton } from "@/components/smart-auth-button";
+import { ExploreTalentFilter } from "@/components/explore-talent-filter";
 
 export const revalidate = 600;
 
@@ -47,14 +46,12 @@ export default async function ExplorePage() {
             Real-time shipping velocity from the world&apos;s most active engineering nodes.
           </p>
 
-          <KineticSearch 
-            prefix="" 
-            placeholder="Search Handle" 
-            buttonText="View" 
-          />
+          <div className="w-full">
+            <ExploreTalentFilter initialUsers={users || []} />
+          </div>
         </section>
 
-        {(!users || users.length === 0) ? (
+        {(!users || users.length === 0) && (
           <section className="p-32 text-center rounded-[3rem] glass border border-dashed border-border/40 flex flex-col items-center gap-6">
             <Github className="w-12 h-12 text-muted-foreground/20" />
             <div className="space-y-4">
@@ -69,8 +66,6 @@ export default async function ExplorePage() {
               Launch Pulse <ArrowRight className="w-4 h-4" />
             </SmartAuthButton>
           </section>
-        ) : (
-          <ExploreGrid users={users} />
         )}
 
         <section className="p-20 rounded-[4rem] bg-foreground text-background flex flex-col md:flex-row items-center justify-between gap-12 group overflow-hidden relative shadow-2xl">

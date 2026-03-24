@@ -3,12 +3,14 @@
 import { motion } from "framer-motion";
 import { SpotlightCard } from "./motion-kit";
 import Link from "next/link";
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight, Github, Star } from "lucide-react";
 
 interface User {
   id: string;
   username: string;
   avatar_url: string;
+  total_stars?: number;
+  top_language?: string;
 }
 
 export function ExploreGrid({ users }: { users: User[] }) {
@@ -36,8 +38,17 @@ export function ExploreGrid({ users }: { users: User[] }) {
               </div>
 
               <div className="text-center space-y-4 relative z-10 mt-8 flex-1 flex flex-col items-center justify-center">
-                <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-muted-foreground/30">Verified <span className="font-light italic">Protocol</span></span>
-                <h3 className="text-4xl font-bold tracking-tighter group-hover:text-primary transition-colors uppercase">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-[9px] font-bold uppercase tracking-widest text-primary">
+                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                     {user.top_language || "Experimental"}
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/5 border border-amber-500/10 text-[9px] font-bold uppercase tracking-widest text-amber-500">
+                     <Star size={10} className="fill-current" />
+                     {user.total_stars || 0}
+                  </div>
+                </div>
+                <h3 className="text-4xl font-bold tracking-tighter group-hover:text-primary transition-colors uppercase pt-2">
                   @{user.username}
                 </h3>
               </div>
