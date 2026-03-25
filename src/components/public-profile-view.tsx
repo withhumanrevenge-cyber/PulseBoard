@@ -11,6 +11,7 @@ import { useComparisonRegistry } from "@/lib/use-comparison";
 import Link from "next/link";
 import { IntelligenceTerminal } from "./intelligence-terminal";
 
+
 function DeploymentBadge({ url }: { url: string }) {
   const [isLive, setIsLive] = useState<boolean | null>(null);
 
@@ -54,6 +55,7 @@ export function PublicProfileView({ username, profile, repos, privacy }: PublicP
     }
     load();
   }, [username]);
+
 
   return (
     <div className="min-h-screen bg-[#fafafa] selection:bg-primary/20">
@@ -121,6 +123,7 @@ export function PublicProfileView({ username, profile, repos, privacy }: PublicP
               </button>
             </div>
         </section>
+
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             <SpotlightCard className="p-10 border border-black/5 bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] rounded-[3rem] group min-h-[480px] flex flex-col justify-between overflow-hidden">
