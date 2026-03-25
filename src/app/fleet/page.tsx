@@ -237,7 +237,7 @@ export default function FleetPage() {
       </main>
 
       <footer className="py-24 text-center border-t border-black/5 mt-32">
-        <p className="text-[10px] font-black uppercase tracking-[1em] opacity-10">Fleet Intelligence v3.2</p>
+        <p className="text-[10px] font-black uppercase tracking-[1em] opacity-10">PulseBoard Fleet Intelligence</p>
       </footer>
     </div>
   );

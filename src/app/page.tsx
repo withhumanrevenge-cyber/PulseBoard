@@ -129,7 +129,7 @@ export default function LandingPage() {
           <div className="space-y-6">
             <div className="flex items-center gap-4 justify-center md:justify-start">
                <PulseLogo className="w-6 h-6 opacity-20" />
-               <span className="text-[10px] font-black uppercase tracking-[0.8em] opacity-20">Developer Platform v3.2</span>
+               <span className="text-[10px] font-black uppercase tracking-[0.8em] opacity-20">Developer Intelligence Platform</span>
             </div>
             <p className="text-black/30 text-base font-medium max-w-sm leading-relaxed italic">The standard for tracking developer shipping frequency and technical velocity.</p>
           </div>

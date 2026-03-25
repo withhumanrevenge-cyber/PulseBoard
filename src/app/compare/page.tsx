@@ -137,7 +137,7 @@ function CompareContent() {
       </main>
 
       <footer className="py-24 text-center border-t border-black/5 mt-32">
-        <p className="text-[10px] font-black uppercase tracking-[1em] opacity-10">Comparison Engine v3.2</p>
+        <p className="text-[10px] font-black uppercase tracking-[1em] opacity-10">PulseBoard Comparison Engine</p>
       </footer>
     </div>
   );
