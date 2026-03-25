@@ -2,7 +2,7 @@
 
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 
 export interface GitHubRepo {
   name: string;
@@ -129,8 +129,8 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
       })),
     };
 
-    if (supabase) {
-      await supabase.from("users").upsert({
+    if (supabaseAdmin) {
+      await supabaseAdmin.from("users").upsert({
         clerk_id: userId,
         username,
         avatar_url: metrics.avatarUrl,

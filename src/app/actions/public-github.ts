@@ -2,12 +2,11 @@
 
 import { Octokit } from "octokit";
 import { calculateDevScore } from "@/lib/dev-score";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 
 export async function getPublicGitHubData(username: string) {
   const token = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
   
-  // Tactical Sanitization: GitHub logins never have spaces or encoded sequences
   const cleanUsername = decodeURIComponent(username).trim().replace(/\s/g, "");
 
   if (!token) {
@@ -116,9 +115,8 @@ export async function getPublicGitHubData(username: string) {
 
     const devScore = calculateDevScore(totalStars, contributions, currentStreak, sortedLangs.length);
 
-    // Persistence Protocol: Stash node in the global registry
-    if (supabase) {
-      const { error } = await supabase
+    if (supabaseAdmin) {
+      const { error } = await supabaseAdmin
         .from("talents")
         .upsert({
           username: cleanUsername,
@@ -148,6 +146,8 @@ export async function getPublicGitHubData(username: string) {
       growthPulse: growthPulse || Math.floor(Math.random() * 8) + 1,
       languageMap,
       devScore,
+      totalRepos: user.repositories.totalCount,
+      totalContributions: contributions,
       repos: repos
         .filter((r: any) => !r.isFork)
         .slice(0, 12)

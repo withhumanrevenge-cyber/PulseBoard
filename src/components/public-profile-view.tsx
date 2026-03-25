@@ -122,7 +122,7 @@ export function PublicProfileView({ username, profile, repos, privacy }: PublicP
             </div>
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             <SpotlightCard className="p-10 border border-black/5 bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] rounded-[3rem] group min-h-[480px] flex flex-col justify-between overflow-hidden">
                  <div className="space-y-4">
                     <p className="text-[10px] font-black uppercase tracking-[0.6em] text-primary">Technical Overview</p>
@@ -132,9 +132,9 @@ export function PublicProfileView({ username, profile, repos, privacy }: PublicP
                  </div>
                  <div className="flex flex-col items-start gap-2">
                     <span className="text-[10px] font-black uppercase text-black/20 tracking-widest">Aggregate Rating</span>
-                    <div className="text-8xl font-black text-black leading-none">{profile.devScore.total}</div>
+                    <div className="text-6xl md:text-7xl font-black text-black leading-none break-all">{profile.devScore.total}</div>
                  </div>
-                 <div className="pt-8 border-t border-black/5 text-[9px] font-bold uppercase tracking-widest text-black/20">Verified Metrics v3.2</div>
+                  <div className="pt-8 border-t border-black/5 text-[9px] font-bold uppercase tracking-widest text-black/40 italic">Verified Live Analysis</div>
             </SpotlightCard>
 
             <SpotlightCard className="p-10 border border-black/5 bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] rounded-[3rem] flex flex-col justify-between min-h-[480px]">
@@ -165,25 +165,47 @@ export function PublicProfileView({ username, profile, repos, privacy }: PublicP
                 </div>
                 <div className="space-y-10">
                    <div className="flex flex-col">
-                      <span className="text-8xl font-black text-black leading-none tabular-nums">{profile.streak || 4}</span>
+                      <span className="text-6xl md:text-8xl font-black text-black leading-none tabular-nums break-all">{profile.streak || 0}</span>
                       <span className="text-[10px] font-black uppercase tracking-widest text-black/20 mt-2">Active Day Streak</span>
                    </div>
                    <div className="space-y-4 pt-10 border-t border-black/5">
                       <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-black">
-                         <span>Contribution Pulse</span>
-                         <span className="text-emerald-500">Stability Optimal</span>
+                         <span>Activity Focus</span>
+                         <span className="text-emerald-500">Peak Performance</span>
                       </div>
-                      <div className="flex gap-1.5 h-16 items-end">
-                         {weeklyData?.slice(-10).map((w, i) => (
-                           <div 
-                             key={i} 
-                             style={{ height: `${Math.max(15, Math.min(100, (w.count / 10) * 100))}%` }}
-                             className="flex-1 bg-black shadow-sm rounded-full opacity-10 hover:opacity-100 transition-all"
-                           />
-                         ))}
-                      </div>
+                      <p className="text-[10px] font-medium text-black/40 italic">
+                         Consistently pushing and updating across the tech stack.
+                      </p>
                    </div>
                 </div>
+            </SpotlightCard>
+
+            <SpotlightCard className="p-10 border border-black/5 bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] rounded-[3rem] min-h-[480px] flex flex-col justify-between">
+                 <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-black/30">Contribution</p>
+                    <GitCommit size={20} className="text-primary" />
+                 </div>
+                 <div className="space-y-10">
+                    <div className="flex flex-col">
+                       <span className="text-6xl md:text-7xl font-black text-black leading-none tabular-nums break-all">{profile.totalContributions || profile.contributions}</span>
+                       <span className="text-[10px] font-black uppercase tracking-widest text-black/20 mt-2">Annual Impact</span>
+                    </div>
+                    <div className="space-y-4 pt-10 border-t border-black/5">
+                       <div className="flex flex-wrap justify-between items-center gap-2 text-[9px] font-black uppercase tracking-widest text-black">
+                          <span>Contribution Pulse</span>
+                          <span className="text-emerald-500 whitespace-nowrap">Stability Optimal</span>
+                       </div>
+                       <div className="flex gap-1.5 h-16 items-end">
+                          {weeklyData?.slice(-10).map((w, i) => (
+                            <div 
+                              key={i} 
+                              style={{ height: `${Math.max(15, Math.min(100, (w / (Math.max(...weeklyData, 1) / 100))))}%` }}
+                              className="flex-1 bg-black shadow-sm rounded-full opacity-10 hover:opacity-100 transition-all"
+                            />
+                          ))}
+                       </div>
+                    </div>
+                 </div>
             </SpotlightCard>
 
             <SpotlightCard className="p-10 border border-black/5 bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] rounded-[3rem] group overflow-hidden min-h-[480px] flex flex-col justify-between">
@@ -191,21 +213,29 @@ export function PublicProfileView({ username, profile, repos, privacy }: PublicP
                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-black/30">Asset Index</p>
                    <Star size={20} className="text-amber-500 fill-amber-500" />
                 </div>
-                <div className="space-y-10 relative z-10">
-                   <div className="flex flex-col">
-                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Total Repositories</span>
-                      <div className="text-7xl font-black tabular-nums text-black leading-none">{profile.totalStars}</div>
+                <div className="space-y-10 relative z-10 w-full">
+                   <div className="flex flex-col overflow-hidden">
+                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Technical Assets</span>
+                      <div className="text-5xl md:text-6xl font-black tabular-nums text-black leading-none break-all">{profile.totalStars}</div>
+                      <span className="text-[9px] font-bold text-black/20 uppercase tracking-widest mt-1">Verified Stars</span>
                    </div>
-                   <div className="p-8 rounded-[2.5rem] bg-black/5 border border-black/5 space-y-4">
-                      <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-black">
-                         <span>Growth Rate</span>
-                         <span className="text-emerald-500">+{profile.growthPulse}%</span>
+                   
+                   <div className="space-y-4">
+                      <div className="flex flex-wrap justify-between items-center gap-2 text-[9px] font-black uppercase tracking-widest text-black">
+                         <span>Global Repositories</span>
+                         <span className="text-black/40">{profile.totalRepos || profile.repos?.length}</span>
                       </div>
-                      <div className="w-full h-2 bg-black/5 rounded-full overflow-hidden">
-                         <div 
-                           className="h-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" 
-                           style={{ width: `${Math.min(100, profile.growthPulse)}%` }}
-                         />
+                      <div className="p-4 rounded-2xl bg-black/5 border border-black/5 flex justify-between items-center">
+                         <div className="space-y-1">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-black/30">Growth Rate</span>
+                            <div className="text-lg font-black text-emerald-500">+{profile.growthPulse}%</div>
+                         </div>
+                         <div className="w-24 h-1.5 bg-black/5 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-emerald-500" 
+                              style={{ width: `${Math.min(100, profile.growthPulse)}%` }}
+                            />
+                         </div>
                       </div>
                    </div>
                 </div>
@@ -291,7 +321,7 @@ export function PublicProfileView({ username, profile, repos, privacy }: PublicP
       <IntelligenceTerminal />
 
       <footer className="py-32 text-center border-t border-black/5 bg-white">
-        <p className="text-[10px] font-black uppercase tracking-[1em] opacity-10 text-black">Platform Registry v3.2</p>
+        <p className="text-[10px] font-black uppercase tracking-[1em] opacity-5 text-black italic">PulseBoard Identity Verified</p>
       </footer>
 
       <AnimatePresence>
