@@ -1,0 +1,29 @@
+# node_modules
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+/build
+
+# testing
+/coverage
+
+# misc
+.DS_Store
+*.pem
+*.log
+build_output.txt
+
+# env files (NEVER COMMIT THESE)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

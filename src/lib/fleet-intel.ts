@@ -1,0 +1,32 @@
+type FleetNode = {
+    totalStars?: number;
+    devScore?: { total?: number; consistency?: number };
+    topLanguage?: string;
+};
+
+export function calculateFleetSynergy(nodes: FleetNode[]) {
+    if (nodes.length === 0) return { score: 0, label: "No profiles", color: "text-white" };
+
+    const avgScore = nodes.reduce((acc, curr) => acc + (curr.devScore?.total || 0), 0) / nodes.length;
+
+    const languages = new Set(nodes.map(n => n.topLanguage));
+    const langDiversity = languages.size / nodes.length;
+
+    const avgStreak = nodes.reduce((acc, curr) => acc + (curr.devScore?.consistency || 0), 0) / nodes.length;
+
+    let synergy = (avgScore * 0.6) + (avgStreak * 0.4);
+
+    if (langDiversity > 0.6) synergy += 10;
+    if (langDiversity < 0.3 && nodes.length > 2) synergy -= 5;
+
+    const score = Math.min(Math.round(synergy), 100);
+
+    let label = "Standard Team";
+    let color = "text-white";
+
+    if (score > 85) { label = "High-performing team"; color = "text-primary"; }
+    else if (score > 70) { label = "Strong momentum"; color = "text-emerald-500"; }
+    else if (score < 40) { label = "Low activity"; color = "text-rose-500"; }
+
+    return { score, label, color };
+}
