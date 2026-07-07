@@ -5,8 +5,11 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { WelcomeBot } from "@/components/welcome-bot";
 import { BotProvider } from "@/components/bot-context";
-import { LoadingOverlay } from "@/components/loading-overlay";
+import { PulseAIProvider } from "@/components/pulse-ai-context";
+import { PulseAIPanel } from "@/components/pulse-ai-panel";
+import { RouteProgress } from "@/components/route-progress";
 import { NavigationLoader } from "@/components/navigation-loader";
+import { ReducedMotionProvider } from "@/components/motion-config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,17 +42,22 @@ export default function RootLayout({
         <body className="min-h-full flex flex-col font-sans bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
+            defaultTheme="system"
+            enableSystem
             disableTransitionOnChange
           >
-            <BotProvider>
-              <Navbar />
-              <NavigationLoader />
-              <LoadingOverlay />
-              <WelcomeBot />
-              {children}
-            </BotProvider>
+            <ReducedMotionProvider>
+              <BotProvider>
+                <PulseAIProvider>
+                  <Navbar />
+                  <NavigationLoader />
+                  <RouteProgress />
+                  <WelcomeBot />
+                  <PulseAIPanel />
+                  {children}
+                </PulseAIProvider>
+              </BotProvider>
+            </ReducedMotionProvider>
           </ThemeProvider>
         </body>
       </html>

@@ -1,7 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -49,12 +49,12 @@ export async function POST(req: Request) {
 
   const eventType = evt.type;
 
-  if (eventType === "user.created" && supabase) {
+  if (eventType === "user.created" && supabaseAdmin) {
     // Optionally sync user to Supabase
     const { id, username, first_name, last_name, image_url } = evt.data;
 
     try {
-      await supabase.from("users").insert({
+      await supabaseAdmin.from("users").insert({
         clerk_id: id,
         username: username || id,
         first_name: first_name,

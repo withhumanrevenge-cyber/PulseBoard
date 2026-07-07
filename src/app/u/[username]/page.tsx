@@ -1,9 +1,13 @@
 import { Metadata } from "next";
+import { cache } from "react";
 import { getPublicGitHubData, type PublicGitHubProfile } from "@/app/actions/public-github";
 import { PublicProfileView } from "@/components/public-profile-view";
 import { Activity } from "lucide-react";
 
 export const revalidate = 300;
+
+// generateMetadata and the page both need the profile — dedupe to one fetch per request.
+const getProfile = cache((username: string) => getPublicGitHubData(username));
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -13,7 +17,7 @@ interface PageProps {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { username } = await props.params;
   const id = username === "demo" ? "levelsio" : username;
-  const profile = await getPublicGitHubData(id);
+  const profile = await getProfile(id);
 
   if (!profile) return { title: "Profile Not Found | PulseBoard" };
 
@@ -29,7 +33,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 export default async function PublicPage(props: PageProps) {
   const { username } = await props.params;
   const id = username === "demo" ? "levelsio" : username;
-  const profile = await getPublicGitHubData(id);
+  const profile = await getProfile(id);
 
   if (!profile) {
     return (

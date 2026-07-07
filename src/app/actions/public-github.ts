@@ -3,6 +3,11 @@
 import { Octokit } from "octokit";
 import { calculateDevScore, type DevScoreMetrics } from "@/lib/dev-score";
 import { supabaseAdmin } from "@/lib/supabase";
+import { upsertTalentVector } from "@/lib/vector-store";
+
+// Registry being offline (paused Supabase project etc.) is environmental, not a
+// per-request bug — warn once instead of spamming console.error on every view.
+let registrySyncWarned = false;
 
 type ContributionDay = {
   contributionCount: number;
@@ -205,7 +210,27 @@ export async function getPublicGitHubData(username: string): Promise<PublicGitHu
           last_fetch: new Date().toISOString(),
         }, { onConflict: 'username' });
         
-      if (error) console.error("[REGISTRY_SYNC_ERROR]", error.message);
+      if (error && !registrySyncWarned) {
+        registrySyncWarned = true;
+        console.warn(
+          "[REGISTRY_SYNC_SKIPPED]",
+          error.message,
+          "— talent registry unreachable; profile pages still work. Check your Supabase project."
+        );
+      }
+
+      // Refresh the talent's search vector (best-effort, never blocks the response).
+      void upsertTalentVector({
+        username: cleanUsername,
+        fullName: user.name,
+        bio: user.bio,
+        topLanguage,
+        languages: sortedLangs.map(([name]) => name),
+        repoText: repos
+          .slice(0, 12)
+          .map((r) => `${r.name} ${r.description ?? ""}`)
+          .join(" "),
+      });
     }
 
     return {

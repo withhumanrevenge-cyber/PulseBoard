@@ -63,7 +63,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className="group h-full"
               >
-                <div className="p-10 rounded-2xl bg-card border border-border/50 hover:border-foreground/20 vercel-shadow transition-all duration-500 h-full flex flex-col justify-between space-y-8 relative overflow-hidden">
+                <div className="p-10 rounded-2xl bg-card border border-border/50 hover:border-foreground/20 spatial-card h-full flex flex-col justify-between space-y-8 relative overflow-hidden">
                   <div className="space-y-6 relative z-10">
                     <div className="w-10 h-10 rounded-xl bg-accent/50 text-foreground flex items-center justify-center border border-border/50 group-hover:scale-110 transition-transform duration-500">
                         <f.icon className="w-4 h-4" />

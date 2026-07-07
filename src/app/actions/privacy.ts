@@ -36,7 +36,7 @@ export async function getSettings() {
       twitter: ""
     };
   } catch (err) {
-    console.error("Get settings error:", err);
+    console.warn("[SETTINGS_UNAVAILABLE]", err instanceof Error ? err.message : err);
     return null;
   }
 }

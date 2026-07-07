@@ -36,7 +36,7 @@ export function IntelligenceTerminal() {
               <div className="space-y-0.5">
                 <p className="text-[10px] font-semibold uppercase tracking-widest opacity-60">Selection</p>
                 <p className="text-xs font-medium">
-                  {selected.length === 1 ? "Select one more profile" : `${selected.length} profiles selected`}
+                  {selected.length === 1 ? "1 profile · add more to compare" : `${selected.length} profiles selected`}
                 </p>
               </div>
             </div>

@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Github, Radio } from "lucide-react";
 import { SmartAuthButton } from "@/components/smart-auth-button";
-import { KineticSearch } from "@/components/kinetic-search";
+import { DevSearch } from "@/components/dev-search";
 import { ExploreTalentFilter } from "@/components/explore-talent-filter";
 import { IntelligenceTerminal } from "@/components/intelligence-terminal";
 import { getExploreUsers } from "@/app/actions/explore";
 import { getTopGithubUsers } from "@/app/actions/github";
 import { motion } from "framer-motion";
-import { LoadingTrigger } from "@/components/loading-trigger";
+import { ProfileGridSkeleton } from "@/components/skeletons";
 import type { ExploreUser } from "@/components/explore-grid";
 import Image from "next/image";
 import Link from "next/link";
@@ -65,14 +65,11 @@ export default function ExplorePage() {
           </div>
 
           <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
-            Analyze performance deltas or identify the highest-impact developers on GitHub.
+            Ask in plain language — PulseBoard searches all of GitHub and answers with live profiles.
           </p>
 
           <div className="w-full">
-            <KineticSearch 
-              placeholder="Search developers for comparison..." 
-              buttonText="Compare Profiles" 
-            />
+            <DevSearch />
           </div>
 
           {topTalents.length > 0 && (
@@ -94,7 +91,7 @@ export default function ExplorePage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="group relative p-4 rounded-xl bg-card border border-border hover:border-foreground/20 transition-all vercel-shadow hover:-translate-y-1"
+                    className="group relative p-4 rounded-xl bg-card border border-border hover:border-foreground/20 spatial-card"
                   >
                     <Link href={`/u/${talent.username}`} className="block space-y-4">
                       <div className="relative w-12 h-12 mx-auto rounded-full overflow-hidden border-2 border-muted group-hover:border-foreground/10 transition-colors">
@@ -129,8 +126,8 @@ export default function ExplorePage() {
         </section>
 
         {loading ? (
-             <div className="py-20 text-center flex flex-col items-center gap-4">
-                <LoadingTrigger />
+             <div className="pt-4">
+                <ProfileGridSkeleton count={6} />
              </div>
         ) : users.length === 0 && (
           <section className="p-20 text-center rounded-xl bg-card border border-border shadow-sm flex flex-col items-center gap-8">

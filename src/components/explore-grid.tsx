@@ -31,7 +31,7 @@ export function ExploreGrid({ users }: { users: ExploreUser[] }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
           >
-            <div className={`group relative p-8 h-[24rem] flex flex-col justify-between border rounded-xl transition-all bg-card ${selected ? "border-foreground shadow-md" : "border-border hover:border-foreground/20 shadow-sm"}`}>
+            <div className={`group relative p-8 h-[24rem] flex flex-col justify-between border rounded-xl spatial-card bg-card ${selected ? "border-foreground" : "border-border hover:border-foreground/20"}`}>
               <button 
                 onClick={(e) => { e.stopPropagation(); toggleNode({ id: user.username, username: user.username, avatar_url: user.avatar_url }); }}
                 className={`absolute top-4 right-4 z-30 p-2 rounded-md transition-all ${selected ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"}`}

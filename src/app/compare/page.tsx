@@ -9,7 +9,7 @@ import Link from "next/link";
 import { PulseLogo } from "@/components/pulse-logo";
 import { Sparkline } from "@/components/sparkline";
 import { getWeeklyContributions } from "@/app/actions/github";
-import { LoadingTrigger } from "@/components/loading-trigger";
+import { CompareSkeleton, PageLoader } from "@/components/skeletons";
 import Image from "next/image";
 
 type ProfileSummary = {
@@ -113,9 +113,7 @@ function CompareContent() {
         </section>
 
         {loading ? (
-          <div className="py-20 text-center flex flex-col items-center gap-4 max-w-xl mx-auto">
-             <LoadingTrigger />
-          </div>
+          <CompareSkeleton count={userList.length} />
         ) : (
           <div className={`grid grid-cols-1 gap-12 lg:gap-16 pt-12 ${profiles.length > 1 ? 'lg:grid-cols-2 xl:grid-cols-3' : ''}`}>
              {profiles.map((profile, i) => (
@@ -149,7 +147,7 @@ function ProfileHero({ data, velocity }: { data: ProfileSummary; velocity: numbe
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-8 flex flex-col items-start text-left p-8 rounded-xl bg-card border border-border shadow-sm relative overflow-hidden min-h-[400px]"
+          className="space-y-8 flex flex-col items-start text-left p-8 rounded-xl bg-card border border-border spatial-card relative overflow-hidden min-h-[400px]"
         >
            <div className="relative group/avatar">
               <div className="relative w-32 h-32 rounded-xl overflow-hidden border-4 border-muted shadow-sm transition-transform group-hover/avatar:scale-105 duration-500 bg-background">
@@ -242,7 +240,7 @@ function MissingHandles() {
 
 export default function ComparePage() {
   return (
-    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><LoadingTrigger /></div>}>
+    <Suspense fallback={<PageLoader />}>
       <CompareContent />
     </Suspense>
   );

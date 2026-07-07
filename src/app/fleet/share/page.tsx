@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
-import { LoadingTrigger } from "@/components/loading-trigger";
+import { PageLoader } from "@/components/skeletons";
 import Image from "next/image";
 
 function SharedFleetRegistry() {
@@ -33,11 +33,7 @@ function SharedFleetRegistry() {
   const totalTeamStarsByFleet = fleetData.reduce((acc, curr) => acc + (curr.totalStars || 0), 0);
   const synergy = calculateFleetSynergy(fleetData);
 
-  if (loading) return (
-     <div className="min-h-screen flex flex-col items-center justify-center space-y-8">
-        <LoadingTrigger />
-     </div>
-  );
+  if (loading) return <PageLoader />;
 
   return (
    <div className="min-h-screen bg-transparent p-6 md:p-24 selection:bg-primary/20">
@@ -73,8 +69,8 @@ function SharedFleetRegistry() {
 
          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {fleetData.map((node, i) => (
-               <motion.div 
-                 key={node.name}
+               <motion.div
+                 key={node.username}
                  initial={{ opacity: 0, scale: 0.95 }}
                  animate={{ opacity: 1, scale: 1 }}
                  transition={{ delay: i * 0.1 }}
@@ -104,8 +100,8 @@ function SharedFleetRegistry() {
                      </div>
                   </div>
 
-                  <Link 
-                    href={`/u/${node.name}`}
+                  <Link
+                    href={`/u/${node.username}`}
                               className="w-full py-5 glass border border-border/40 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center rounded-[1.5rem] hover:bg-foreground hover:text-background transition-all gap-4"
                   >
                     View Profile
@@ -125,7 +121,7 @@ function SharedFleetRegistry() {
 
 export default function FleetShare() {
   return (
-    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><LoadingTrigger /></div>}>
+    <Suspense fallback={<PageLoader />}>
       <SharedFleetRegistry />
     </Suspense>
   );

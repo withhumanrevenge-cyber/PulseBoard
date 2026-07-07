@@ -29,10 +29,10 @@ export function ExploreTalentFilter({ initialUsers }: ExploreTalentFilterProps) 
     try {
       const data = await getPublicGitHubData(normalizedSearch);
       if (data) {
-        toggleNode({ 
-           id: data.name, 
-           username: data.name, 
-           avatar_url: data.avatarUrl 
+        toggleNode({
+           id: data.username,
+           username: data.username,
+           avatar_url: data.avatarUrl
         });
       }
     } catch (err) {

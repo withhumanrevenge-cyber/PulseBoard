@@ -8,6 +8,7 @@ import { getGitHubStats, GitHubMetrics } from "@/app/actions/github";
 import { getSettings } from "@/app/actions/privacy";
 import { Sparkline } from "@/components/sparkline";
 import { useBot } from "@/components/bot-context";
+import { DashboardSkeleton } from "@/components/skeletons";
 import Image from "next/image";
 
 const itemVariants: Variants = {
@@ -122,7 +123,7 @@ export default function DashboardPage() {
     return () => setIsLoading(false);
   }, [isLoaded, loading, setIsLoading]);
 
-  if (!isLoaded || loading) return <div className="min-h-screen bg-background" />;
+  if (!isLoaded || loading) return <DashboardSkeleton />;
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-muted bg-background text-foreground">
@@ -184,7 +185,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {cards.map((stat, i) => (
               <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <div className="p-8 rounded-xl bg-card border border-border h-48 flex flex-col justify-between shadow-sm">
+                <div className="p-8 rounded-xl bg-card border border-border h-48 flex flex-col justify-between spatial-card">
                   <div className="h-full flex flex-col justify-between relative z-10">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{stat.label}</span>
@@ -214,7 +215,7 @@ export default function DashboardPage() {
         </div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative group h-full">
-          <div className="p-8 rounded-xl bg-card border border-border overflow-hidden text-left shadow-sm">
+          <div className="p-8 rounded-xl bg-card border border-border overflow-hidden text-left spatial-card">
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-16">
               <div className="flex-1 space-y-4">
                 <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-foreground">
@@ -269,7 +270,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-20">
               {data?.recentRepos?.map((repo, i) => (
                   <motion.div key={repo.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="group relative">
-                    <div className="p-6 rounded-xl bg-card border border-border h-72 flex flex-col justify-between text-left relative z-10 shadow-sm transition-colors hover:border-foreground/20">
+                    <div className="p-6 rounded-xl bg-card border border-border h-72 flex flex-col justify-between text-left relative z-10 spatial-card hover:border-foreground/20">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold tracking-tight truncate max-w-[150px]">

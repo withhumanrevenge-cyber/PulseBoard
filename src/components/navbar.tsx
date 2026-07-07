@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { PulseLogo } from "@/components/pulse-logo";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { motion } from "framer-motion";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -56,7 +57,8 @@ export function Navbar() {
         </nav>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <ThemeToggle />
         <SignedOut>
           <SignInButton mode="modal">
             <button className="h-8 px-4 rounded-md bg-foreground text-background text-xs font-semibold hover:opacity-90 transition-all vercel-shadow">

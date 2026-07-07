@@ -4,30 +4,29 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent, useTransform }
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useBot } from "./bot-context";
+import { usePulseAI } from "./pulse-ai-context";
 
 export function WelcomeBot({ inline = false }: { inline?: boolean }) {
   const { isLoading } = useBot();
+  const { openChat } = usePulseAI();
   const pathname = usePathname();
   const isHome = pathname === "/";
-  
+
   const [message, setMessage] = useState("Hello.");
   const [isMessageVisible, setIsMessageVisible] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const { scrollY: motionScrollY } = useScroll();
+
+  const isLauncher = !inline && !isLoading;
 
   useMotionValueEvent(motionScrollY, "change", (latest) => {
     setScrollY(latest);
   });
 
-  // Sync message visibility with loading state
   useEffect(() => {
-    if (isLoading) {
-      setIsMessageVisible(true);
-      setMessage("Just you wait...");
-      return;
-    }
-
-    if (isHome && scrollY < 160) {
+    // Only the inline hero mascot greets — the corner launcher never shows a bubble.
+    if (inline && isHome && scrollY < 160) {
       setIsMessageVisible(true);
       setMessage("Welcome to PulseBoard.");
       const timer = window.setTimeout(() => setIsMessageVisible(false), 3200);
@@ -35,29 +34,17 @@ export function WelcomeBot({ inline = false }: { inline?: boolean }) {
     }
 
     setIsMessageVisible(false);
-  }, [isLoading, isHome, scrollY]);
+  }, [inline, isHome, scrollY]);
 
-  const getPos = () => {
-    if (isLoading) {
-      return { 
-        left: "50%", 
-        top: "50%", 
-        translateX: "-50%", 
-        translateY: "-50%", 
-        scale: 1.2,
-      };
-    }
-    // Fixed corner position
-    return { 
-      left: "auto",
-      right: "32px", 
-      top: "auto",
-      bottom: "32px", 
-      translateX: "0%", 
-      translateY: "0%", 
-      scale: 1 
-    };
-  };
+  const getPos = () => ({
+    left: "auto",
+    right: "32px",
+    top: "auto",
+    bottom: "32px",
+    translateX: "0%",
+    translateY: "0%",
+    scale: 1,
+  });
 
   const opacity = useTransform(motionScrollY, [0, 120], [0, 1]);
 
@@ -65,26 +52,56 @@ export function WelcomeBot({ inline = false }: { inline?: boolean }) {
   const finalOpacity = isHome && !inline ? opacity : 1;
 
   return (
-    <motion.div 
+    <motion.div
       initial={inline ? { opacity: 1, scale: 1 } : false}
       animate={inline ? {} : getPos()}
-      style={{ 
+      style={{
         opacity: finalOpacity,
         position: inline ? "relative" : "fixed",
         zIndex: inline ? 10 : 40,
         pointerEvents: (inline || !isHome || scrollY > 120) ? "auto" : "none"
       }}
-      transition={{ 
-        type: "spring", 
-        damping: 20, 
-        stiffness: 180, 
-        mass: 1 
+      transition={{
+        type: "spring",
+        damping: 20,
+        stiffness: 180,
+        mass: 1
       }}
-      className={`${inline ? "relative" : "fixed"} hidden md:flex flex-col items-center`}
+      onClick={isLauncher ? () => openChat() : undefined}
+      onMouseEnter={isLauncher ? () => setHovered(true) : undefined}
+      onMouseLeave={isLauncher ? () => setHovered(false) : undefined}
+      role={isLauncher ? "button" : undefined}
+      tabIndex={isLauncher ? 0 : undefined}
+      aria-label={isLauncher ? "Open PulseAI Talent Scout" : undefined}
+      onKeyDown={
+        isLauncher
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openChat();
+              }
+            }
+          : undefined
+      }
+      className={`${inline ? "relative" : "fixed"} hidden md:flex flex-col items-center outline-none ${isLauncher ? "cursor-pointer" : ""}`}
     >
       <div className="relative flex flex-col items-center gap-4">
-        
+        <AnimatePresence>
+          {isLauncher && hovered && (
+            <motion.div
+              initial={{ opacity: 0, y: 6, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.9 }}
+              className="absolute -top-12 px-3 py-1.5 rounded-2xl bg-foreground text-background text-[11px] font-bold uppercase tracking-widest shadow-2xl whitespace-nowrap vercel-shadow"
+            >
+              Ask PulseAI
+              <div className="absolute w-3 h-3 bg-foreground rotate-45 -bottom-1 left-1/2 -translate-x-1/2" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
+          animate={isLauncher && hovered ? { scale: 1.08 } : { scale: 1 }}
           className="relative w-12 h-20 flex flex-col items-center z-50"
         >
           <motion.div 

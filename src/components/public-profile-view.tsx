@@ -116,7 +116,7 @@ export function PublicProfileView({ username, profile, repos }: PublicProfileVie
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-8 border border-border/50 bg-card vercel-shadow rounded-2xl flex flex-col justify-between h-64">
+            <div className="p-8 border border-border/50 bg-card spatial-card rounded-2xl flex flex-col justify-between h-64">
                  <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Reputation</p>
                     <h2 className="text-lg font-bold tracking-tight text-foreground">Dev Score</h2>
@@ -129,7 +129,7 @@ export function PublicProfileView({ username, profile, repos }: PublicProfileVie
                  </div>
             </div>
 
-            <div className="p-8 border border-border/50 bg-card vercel-shadow rounded-2xl flex flex-col justify-between h-64">
+            <div className="p-8 border border-border/50 bg-card spatial-card rounded-2xl flex flex-col justify-between h-64">
                  <div className="space-y-1 text-center">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Technology</p>
                     <div className="w-full aspect-square max-h-24 relative flex items-center justify-center p-2 mx-auto">
@@ -150,7 +150,7 @@ export function PublicProfileView({ username, profile, repos }: PublicProfileVie
                  </div>
             </div>
 
-            <div className="p-8 border border-border/50 bg-card vercel-shadow rounded-2xl h-64 flex flex-col justify-between">
+            <div className="p-8 border border-border/50 bg-card spatial-card rounded-2xl h-64 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Consistency</p>
                    <TrendingUp size={14} className="text-emerald-500" />
@@ -163,7 +163,7 @@ export function PublicProfileView({ username, profile, repos }: PublicProfileVie
                 </div>
             </div>
 
-            <div className="p-8 border border-border/50 bg-card vercel-shadow rounded-2xl h-64 flex flex-col justify-between">
+            <div className="p-8 border border-border/50 bg-card spatial-card rounded-2xl h-64 flex flex-col justify-between">
                  <div className="flex items-center justify-between">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Volume</p>
                     <GitCommit size={14} className="text-foreground" />
@@ -171,7 +171,7 @@ export function PublicProfileView({ username, profile, repos }: PublicProfileVie
                  <div className="space-y-4">
                     <div className="flex flex-col">
                        <span className="text-6xl font-bold text-foreground leading-none tabular-nums">{profile.totalContributions || profile.contributions}</span>
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-2">Annual Contributions</span>
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-2">Contributions · 100d</span>
                     </div>
                     <div className="flex gap-1 h-6 items-end">
                        {weeklyData?.slice(-12).map((w, i) => (
@@ -202,7 +202,7 @@ export function PublicProfileView({ username, profile, repos }: PublicProfileVie
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
                     >
-                      <div className="group p-8 h-full flex flex-col justify-between space-y-10 border border-border/50 bg-card vercel-shadow rounded-2xl hover:border-foreground/20 transition-all duration-500 relative overflow-hidden">
+                      <div className="group p-8 h-full flex flex-col justify-between space-y-10 border border-border/50 bg-card spatial-card rounded-2xl hover:border-foreground/20 transition-all duration-500 relative overflow-hidden">
                         <DeploymentBadge url={repo.homepage || ""} />
                         
                         <div className="space-y-6">

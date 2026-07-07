@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getPublicGitHubData, type PublicGitHubProfile } from "@/app/actions/public-github";
 import { calculateFleetSynergy } from "@/lib/fleet-intel";
-import { LoadingTrigger } from "@/components/loading-trigger";
+import { ProfileGridSkeleton } from "@/components/skeletons";
 import Image from "next/image";
 
 export default function FleetPage() {
@@ -93,7 +93,7 @@ export default function FleetPage() {
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-8 rounded-xl bg-card border border-border flex flex-col justify-between h-64 text-left shadow-sm">
+            <div className="p-8 rounded-xl bg-card border border-border flex flex-col justify-between h-64 text-left spatial-card">
                 <div className="space-y-2">
                    <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Active team size</p>
                  <h2 className="text-2xl font-semibold tracking-tight">Profiles</h2>
@@ -103,7 +103,7 @@ export default function FleetPage() {
                 </div>
             </div>
             
-            <div className="p-8 rounded-xl bg-card border border-border flex flex-col justify-between h-64 text-left shadow-sm">
+            <div className="p-8 rounded-xl bg-card border border-border flex flex-col justify-between h-64 text-left spatial-card">
                 <div className="space-y-2">
                    <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Aggregated Impact</p>
                    <h2 className="text-2xl font-semibold tracking-tight">Verified Stars</h2>
@@ -133,9 +133,7 @@ export default function FleetPage() {
           </div>
 
           {loading ? (
-            <div className="py-20 text-center flex flex-col items-center gap-4">
-                <LoadingTrigger />
-            </div>
+            <ProfileGridSkeleton count={selected.length || 3} />
           ) : selected.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-32 space-y-8 text-center bg-muted/20 border-2 border-dashed border-border rounded-xl">
                 <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
@@ -156,12 +154,12 @@ export default function FleetPage() {
               <AnimatePresence>
                 {fleetData.map((node, i) => (
                   <motion.div
-                    key={node.name}
+                    key={node.username}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
                   >
-                    <div className="p-8 rounded-xl bg-card border border-border space-y-8 text-left relative overflow-hidden shadow-sm transition-colors hover:border-foreground/20">
+                    <div className="p-8 rounded-xl bg-card border border-border space-y-8 text-left relative overflow-hidden spatial-card hover:border-foreground/20">
                       <div className="absolute top-6 right-6 z-30">
                          <button 
                            onClick={() => toggleNode({ id: node.username, username: node.username, avatar_url: node.avatarUrl })}

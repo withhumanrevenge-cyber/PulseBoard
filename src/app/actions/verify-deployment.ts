@@ -2,18 +2,28 @@
 
 export async function verifyDeployment(url: string): Promise<boolean> {
   if (!url) return false;
-  
+
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
 
-    const response = await fetch(url, { 
-      method: 'HEAD', 
-      mode: 'no-cors',
-      signal: controller.signal 
-    }).finally(() => clearTimeout(timeout));
+    // server-side fetch: real status, no CORS. some hosts 405 HEAD -> retry GET.
+    let response = await fetch(url, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: controller.signal,
+    }).catch(() => null);
 
-    return response.ok || response.status === 0; // status 0 is common for no-cors head requests that still resolved
+    if (!response || response.status === 405) {
+      response = await fetch(url, {
+        method: "GET",
+        redirect: "follow",
+        signal: controller.signal,
+      }).catch(() => null);
+    }
+
+    clearTimeout(timeout);
+    return Boolean(response && response.status < 400);
   } catch {
     return false;
   }
