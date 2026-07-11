@@ -74,12 +74,12 @@ export default function ExplorePage() {
 
           {topTalents.length > 0 && (
             <div className="w-full pt-16 space-y-8">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-left">
                   <h2 className="text-2xl font-semibold tracking-tight">Global Impact Leaders</h2>
                   <p className="text-sm text-muted-foreground font-medium">Ranked by weighted contribution and follower distribution</p>
                 </div>
-                <div className="px-3 py-1 rounded-md bg-muted text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-border">
+                <div className="self-start px-3 py-1 rounded-md bg-muted text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-border shrink-0">
                   Updated Daily
                 </div>
               </div>

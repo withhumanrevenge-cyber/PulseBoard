@@ -36,34 +36,34 @@ function SharedFleetRegistry() {
   if (loading) return <PageLoader />;
 
   return (
-   <div className="min-h-screen bg-transparent p-6 md:p-24 selection:bg-primary/20">
-      <header className="max-w-7xl mx-auto space-y-8 mb-32 text-center">
+   <div className="min-h-screen bg-transparent p-5 sm:p-10 md:p-24 selection:bg-primary/20 overflow-x-hidden">
+      <header className="max-w-7xl mx-auto space-y-8 mb-16 md:mb-32 text-center">
         <div className="space-y-4">
            <span className="px-6 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.5em] text-primary">Team Summary</span>
-           <h1 className="text-7xl md:text-9xl font-black tracking-tighter uppercase leading-none">Shared <span className="font-light italic opacity-20">Team</span></h1>
+           <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter uppercase leading-none">Shared <span className="font-light italic opacity-20">Team</span></h1>
         </div>
-        <p className="text-[12px] font-bold uppercase tracking-[0.5em] opacity-30 flex items-center gap-4 justify-center">
+        <p className="text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.25em] sm:tracking-[0.5em] opacity-30 flex flex-wrap items-center gap-3 sm:gap-4 justify-center text-center">
            <Shield size={16} className="text-primary" />
            {synergy.label} Team Profile
         </p>
       </header>
 
-      <main className="max-w-7xl mx-auto space-y-32">
+      <main className="max-w-7xl mx-auto space-y-16 md:space-y-32">
          <section className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="p-12 rounded-[4rem] glass border border-border/60 space-y-4">
+            <div className="p-8 md:p-12 rounded-3xl md:rounded-[4rem] glass border border-border/60 space-y-4">
                <span className="text-[10px] font-black uppercase tracking-[0.5em] opacity-30 text-foreground">Profiles</span>
-               <div className="text-8xl font-black tracking-tighter text-foreground">{fleetData.length}</div>
+               <div className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter text-foreground tabular-nums">{fleetData.length}</div>
             </div>
-            <div className="p-12 rounded-[4rem] glass border border-border/60 space-y-4">
+            <div className="p-8 md:p-12 rounded-3xl md:rounded-[4rem] glass border border-border/60 space-y-4">
                <span className="text-[10px] font-black uppercase tracking-[0.5em] opacity-30 text-foreground">Total Stars</span>
-               <div className="text-8xl font-black tracking-tighter text-foreground">{totalTeamStarsByFleet}</div>
+               <div className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter text-foreground">{totalTeamStarsByFleet}</div>
             </div>
-            <div className="p-12 rounded-[4rem] glass border border-primary/20 space-y-6 bg-primary/5">
+            <div className="p-8 md:p-12 rounded-3xl md:rounded-[4rem] glass border border-primary/20 space-y-6 bg-primary/5">
                 <div className="space-y-1">
                    <p className={`text-[10px] font-black uppercase tracking-[0.5em] ${synergy.color}`}>{synergy.label}</p>
                      <span className="text-[8px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] italic">Team Fit</span>
                 </div>
-                <div className="text-8xl font-black tracking-tighter text-primary">{synergy.score}%</div>
+                <div className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter text-primary">{synergy.score}%</div>
             </div>
          </section>
 
@@ -74,14 +74,14 @@ function SharedFleetRegistry() {
                  initial={{ opacity: 0, scale: 0.95 }}
                  animate={{ opacity: 1, scale: 1 }}
                  transition={{ delay: i * 0.1 }}
-                         className="p-10 rounded-[4rem] glass border border-border/40 space-y-8 group hover:border-primary/20 transition-all"
+                         className="p-6 md:p-10 rounded-3xl md:rounded-[4rem] glass border border-border/40 space-y-8 group hover:border-primary/20 transition-all"
                >
-                  <div className="flex items-center gap-8">
-                     <div className="relative w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-background shadow-2xl">
+                  <div className="flex items-center gap-5 md:gap-8">
+                     <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-3xl md:rounded-[2rem] overflow-hidden border-4 border-background shadow-2xl shrink-0">
                         <Image src={node.avatarUrl} alt={node.name} fill sizes="96px" className="object-cover" />
                      </div>
-                     <div className="space-y-1">
-                        <h3 className="text-3xl font-black uppercase tracking-tight truncate max-w-[150px]">{node.name}</h3>
+                     <div className="space-y-1 min-w-0">
+                        <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight truncate">{node.name}</h3>
                         <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{node.topLanguage} Specialist</p>
                      </div>
                   </div>
@@ -112,7 +112,7 @@ function SharedFleetRegistry() {
          </section>
       </main>
 
-      <footer className="py-48 text-center text-[10px] font-black uppercase tracking-[1em] opacity-5">
+      <footer className="py-24 md:py-48 text-center text-[10px] font-black uppercase tracking-[0.4em] sm:tracking-[1em] opacity-5">
          Generated by PulseBoard
       </footer>
     </div>

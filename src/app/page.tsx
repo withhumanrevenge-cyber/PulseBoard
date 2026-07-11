@@ -11,7 +11,7 @@ export default function LandingPage() {
   return (
     <div className="relative min-h-screen flex flex-col selection:bg-accent/30 bg-background text-foreground overflow-x-hidden">
       
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 pt-32 pb-24 space-y-40">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-6 pt-20 md:pt-32 pb-24 space-y-24 md:space-y-40">
         <section className="relative flex flex-col items-center justify-center text-center space-y-12">
           <div className="relative flex flex-col items-center space-y-8">
              <div className="mb-4">
@@ -19,7 +19,7 @@ export default function LandingPage() {
              </div>
             
             <div className="space-y-6">
-               <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[1.0] pb-2 max-w-4xl mx-auto text-gradient">
+               <h1 className="text-5xl sm:text-6xl md:text-8xl font-bold tracking-tighter leading-[1.05] md:leading-[1.0] pb-2 max-w-4xl mx-auto text-gradient">
                  Verified profiles <br className="hidden md:block" /> that stay current.
                </h1>
             </div>

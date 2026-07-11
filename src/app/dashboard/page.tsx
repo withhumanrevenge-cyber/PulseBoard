@@ -325,11 +325,11 @@ export default function DashboardPage() {
 
       <AnimatePresence>
         {showFloating && (
-          <motion.div key="floating-dock" initial={{ y: 100, x: "-50%", opacity: 0 }} animate={{ y: 0, x: "-50%", opacity: 1 }} exit={{ y: 100, x: "-50%", opacity: 0 }} className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-3 glass-card p-3 rounded-full border border-border/40 shadow-2xl backdrop-blur-xl">
-            <button onClick={handleSync} disabled={syncing} className="p-4 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-all text-primary"><RefreshCcw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} /></button>
+          <motion.div key="floating-dock" initial={{ y: 100, x: "-50%", opacity: 0 }} animate={{ y: 0, x: "-50%", opacity: 1 }} exit={{ y: 100, x: "-50%", opacity: 0 }} className="fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-1.5 md:gap-3 glass-card p-2 md:p-3 rounded-full border border-border/40 shadow-2xl backdrop-blur-xl max-w-[calc(100vw-2rem)]">
+            <button onClick={handleSync} disabled={syncing} className="p-3 md:p-4 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-all text-primary"><RefreshCcw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} /></button>
             <div className="h-8 w-px bg-border/60" />
-            <button onClick={() => window.open(`/u/${user?.username || user?.id}`, '_blank')} className="px-8 py-4 rounded-full bg-foreground text-background text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all outline-none"><Rocket className="w-4 h-4" />Open profile</button>
-            <div className="h-8 w-px bg-border/60" /><button onClick={() => setIsSettingsOpen(true)} className="p-4 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-all"><Settings className="w-5 h-5 text-muted-foreground" /></button>
+            <button onClick={() => window.open(`/u/${user?.username || user?.id}`, '_blank')} className="px-5 md:px-8 py-3 md:py-4 rounded-full bg-foreground text-background text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all outline-none whitespace-nowrap"><Rocket className="w-4 h-4" />Open profile</button>
+            <div className="h-8 w-px bg-border/60" /><button onClick={() => setIsSettingsOpen(true)} className="p-3 md:p-4 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-all"><Settings className="w-5 h-5 text-muted-foreground" /></button>
           </motion.div>
         )}
       </AnimatePresence>

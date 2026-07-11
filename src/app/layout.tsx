@@ -7,6 +7,7 @@ import { WelcomeBot } from "@/components/welcome-bot";
 import { BotProvider } from "@/components/bot-context";
 import { PulseAIProvider } from "@/components/pulse-ai-context";
 import { PulseAIPanel } from "@/components/pulse-ai-panel";
+import { PulseAIFab } from "@/components/pulse-ai-fab";
 import { RouteProgress } from "@/components/route-progress";
 import { NavigationLoader } from "@/components/navigation-loader";
 import { ReducedMotionProvider } from "@/components/motion-config";
@@ -53,6 +54,7 @@ export default function RootLayout({
                   <NavigationLoader />
                   <RouteProgress />
                   <WelcomeBot />
+                  <PulseAIFab />
                   <PulseAIPanel />
                   {children}
                 </PulseAIProvider>
