@@ -1,7 +1,7 @@
 // Talent vector store: pgvector match_talents RPC when present, else in-memory cosine.
 
 import { supabaseAdmin, supabase } from "@/lib/supabase";
-import { embed, profileToDocument, cosineSimilarity } from "@/lib/embeddings";
+import { embed, profileToDocument, cosineSimilarity, EMBED_DIM } from "@/lib/embeddings";
 
 export interface ScoredDeveloper {
   username: string;
@@ -20,7 +20,27 @@ interface TalentRow {
   top_language: string | null;
   total_stars: number | null;
   dev_score: number | null;
-  embedding?: number[] | null;
+  // pgvector serialises through PostgREST as a string like "[0.1,0.2,...]".
+  embedding?: number[] | string | null;
+}
+
+// Warn once when the embedding column is missing so the operator knows why
+// search quality is degraded, instead of the previous silent swallow.
+let embeddingColumnWarned = false;
+
+function parseEmbedding(raw: number[] | string | null | undefined): number[] | null {
+  if (!raw) return null;
+  if (Array.isArray(raw)) return raw.length === EMBED_DIM ? raw : null;
+  if (typeof raw !== "string") return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (Array.isArray(parsed) && parsed.length === EMBED_DIM) {
+      return parsed.map((n) => Number(n));
+    }
+  } catch {
+    // fall through
+  }
+  return null;
 }
 
 export async function upsertTalentVector(input: {
@@ -32,22 +52,29 @@ export async function upsertTalentVector(input: {
   repoText?: string;
 }): Promise<void> {
   if (!supabaseAdmin) return;
-  try {
-    const doc = profileToDocument({
-      name: input.fullName,
-      username: input.username,
-      bio: input.bio,
-      topLanguage: input.topLanguage,
-      languages: input.languages,
-      repoText: input.repoText,
-    });
-    const embedding = embed(doc);
-    await supabaseAdmin
-      .from("talents")
-      .update({ embedding })
-      .eq("username", input.username);
-  } catch {
-    // embedding column not provisioned; search falls back to in-memory
+  const doc = profileToDocument({
+    name: input.fullName,
+    username: input.username,
+    bio: input.bio,
+    topLanguage: input.topLanguage,
+    languages: input.languages,
+    repoText: input.repoText,
+  });
+  const embedding = embed(doc);
+
+  // Upsert (not update) — the row is created by the caller in the same request
+  // but on a fresh registry the update would silently affect zero rows.
+  const { error } = await supabaseAdmin
+    .from("talents")
+    .upsert({ username: input.username, embedding }, { onConflict: "username" });
+
+  if (error && !embeddingColumnWarned) {
+    embeddingColumnWarned = true;
+    console.warn(
+      "[VECTOR_UPSERT_SKIPPED]",
+      error.message,
+      "— vector search falls back to name/language ranking. Apply 0001_talent_vectors.sql to fix."
+    );
   }
 }
 
@@ -87,16 +114,16 @@ export async function searchDevelopers(
   if (error || !data) return [];
 
   const scored = (data as TalentRow[]).map((r) => {
+    const stored = parseEmbedding(r.embedding);
     const vec =
-      Array.isArray(r.embedding) && r.embedding.length
-        ? r.embedding
-        : embed(
-            profileToDocument({
-              name: r.full_name,
-              username: r.username,
-              topLanguage: r.top_language,
-            })
-          );
+      stored ??
+      embed(
+        profileToDocument({
+          name: r.full_name,
+          username: r.username,
+          topLanguage: r.top_language,
+        })
+      );
     return {
       username: r.username,
       fullName: r.full_name,

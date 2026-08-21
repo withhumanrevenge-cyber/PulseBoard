@@ -228,9 +228,11 @@ export async function askPulseAI(
   try {
     for (let round = 0; round < 4; round++) {
       const reply = await groqChat({ messages, tools: TOOLS });
+      // OpenAI-compat spec: an assistant turn carrying tool_calls must set
+      // content to null (some models — including gpt-oss — reject "" here).
       messages.push({
         role: "assistant",
-        content: reply.content ?? "",
+        content: reply.content ?? null,
         tool_calls: reply.tool_calls,
       });
 

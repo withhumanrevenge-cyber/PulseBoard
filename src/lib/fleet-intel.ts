@@ -12,9 +12,12 @@ export function calculateFleetSynergy(nodes: FleetNode[]) {
     const languages = new Set(nodes.map(n => n.topLanguage));
     const langDiversity = languages.size / nodes.length;
 
-    const avgStreak = nodes.reduce((acc, curr) => acc + (curr.devScore?.consistency || 0), 0) / nodes.length;
+    // consistency is on a 0–20 scale (see dev-score.ts); scale to 0–100 before
+    // averaging with avgScore, which is already 0–100.
+    const avgConsistency100 =
+      (nodes.reduce((acc, curr) => acc + (curr.devScore?.consistency || 0), 0) / nodes.length) * 5;
 
-    let synergy = (avgScore * 0.6) + (avgStreak * 0.4);
+    let synergy = (avgScore * 0.6) + (avgConsistency100 * 0.4);
 
     if (langDiversity > 0.6) synergy += 10;
     if (langDiversity < 0.3 && nodes.length > 2) synergy -= 5;

@@ -20,6 +20,7 @@ export interface GitHubMetrics {
   contributionCount: number;
   topLanguage: string;
   activeDays: string;
+  activeDaysTotal: number;
   recentRepos: GitHubRepo[];
   languageMap: { name: string; percentage: number; color: string }[];
   streak: number;
@@ -65,7 +66,9 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
 
     const token = oauthToken.data[0].token;
     const octokit = new Octokit({ auth: token });
-    const username = (await octokit.rest.users.getAuthenticated()).data.login;
+    const authUser = (await octokit.rest.users.getAuthenticated()).data;
+    const username = authUser.login;
+    const authAvatarUrl = authUser.avatar_url;
 
     const [allRepos, contributionResponse] = await Promise.all([
       octokit.paginate(octokit.rest.repos.listForAuthenticatedUser, {
@@ -115,15 +118,21 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
       color: getLangColor(name)
     }));
 
-    let streak = 0;
+    // Newest-first, then walk from today back. A zero-day ends the streak
+    // immediately — the previous code silently skipped leading zero-days and
+    // credited a streak that already ended.
     const allDays = contributionResponse.user?.contributionsCollection?.contributionCalendar?.weeks
       ?.flatMap((w) => w.contributionDays)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
-    
+
+    let streak = 0;
     for (const day of allDays) {
       if (day.contributionCount > 0) streak++;
-      else if (streak > 0) break;
+      else break;
     }
+    const activeDaysCount = allDays.filter((d) => d.contributionCount > 0).length;
+    const activeDaysWindow = Math.min(allDays.length, 30);
+    const activeDaysRecent = allDays.slice(0, activeDaysWindow).filter((d) => d.contributionCount > 0).length;
 
     const weeklyContributions = contributionResponse.user?.contributionsCollection?.contributionCalendar?.weeks
       ?.slice(-7)
@@ -131,14 +140,20 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
 
     const metrics: GitHubMetrics = {
       username,
-      avatarUrl: allRepos[0]?.owner.avatar_url || "",
+      // getAuthenticated() is the source of truth; falling back to the first
+      // repo's owner avatar was empty for users with zero repos.
+      avatarUrl: authAvatarUrl || allRepos[0]?.owner.avatar_url || "",
       totalStars,
       contributionCount,
       topLanguage,
       streak,
       languageMap,
       weeklyContributions,
-      activeDays: `${Math.min(30, Math.ceil(contributionCount / 10))}/30`,
+      // Real days-with-contributions in the last 30 days on record — the old
+      // `Math.ceil(contributionCount / 10)` was a fake ratio unrelated to
+      // whether the user actually pushed on those days.
+      activeDays: `${activeDaysRecent}/${activeDaysWindow || 30}`,
+      activeDaysTotal: activeDaysCount,
       recentRepos: allRepos.filter(r => !r.fork).slice(0, 12).map(repo => ({
         name: repo.name,
         stars: repo.stargazers_count || 0,

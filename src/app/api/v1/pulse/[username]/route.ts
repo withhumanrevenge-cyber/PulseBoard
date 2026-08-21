@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { getPublicGitHubData } from "@/app/actions/public-github";
-import { supabase } from "@/lib/supabase";
+// Read privacy through the admin client — the anon client is subject to RLS
+// on `users` and silently returned no rows, so privacy toggles never took
+// effect on this public endpoint.
+import { supabaseAdmin } from "@/lib/supabase";
 
 type PrivacySettings = {
   hideStars: boolean;
   hideContributions: boolean;
   hideTech: boolean;
 };
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ username: string }> }
@@ -23,17 +27,25 @@ export async function GET(
       );
     }
 
-    // Fetch user privacy settings from Supabase if available
     let privacy: PrivacySettings = { hideStars: false, hideContributions: false, hideTech: false };
-    if (supabase) {
-      const { data } = await supabase
+    if (supabaseAdmin) {
+      const { data, error } = await supabaseAdmin
         .from("users")
-        .select("privacy_settings")
+        .select("hide_stars, hide_contributions, privacy_settings")
         .eq("username", username)
-        .single();
-      
-      if (data?.privacy_settings) {
-        privacy = data.privacy_settings as PrivacySettings;
+        .maybeSingle();
+
+      if (error) {
+        console.warn("[PULSE_V1_PRIVACY_LOOKUP]", error.message);
+      } else if (data) {
+        // Support both the newer flat columns (hide_stars / hide_contributions,
+        // set via /api/settings) and the older privacy_settings jsonb.
+        const nested = (data.privacy_settings ?? {}) as Partial<PrivacySettings>;
+        privacy = {
+          hideStars: Boolean(data.hide_stars ?? nested.hideStars ?? false),
+          hideContributions: Boolean(data.hide_contributions ?? nested.hideContributions ?? false),
+          hideTech: Boolean(nested.hideTech ?? false),
+        };
       }
     }
 

@@ -49,23 +49,36 @@ export async function POST(req: Request) {
 
   const eventType = evt.type;
 
-  if (eventType === "user.created" && supabaseAdmin) {
-    // Optionally sync user to Supabase
+  if ((eventType === "user.created" || eventType === "user.updated") && supabaseAdmin) {
     const { id, username, first_name, last_name, image_url } = evt.data;
 
-    try {
-      await supabaseAdmin.from("users").insert({
+    // Upsert, not insert — svix retries on any non-2xx, so a duplicate-key
+    // failure on retry would loop forever burning function invocations.
+    const { error } = await supabaseAdmin.from("users").upsert(
+      {
         clerk_id: id,
         username: username || id,
         first_name: first_name,
         last_name: last_name,
         avatar_url: image_url,
-      });
-      return new Response("User created", { status: 200 });
-    } catch (dbError) {
-      console.error("Error creating user in DB:", dbError);
+      },
+      { onConflict: "clerk_id" }
+    );
+
+    if (error) {
+      console.error("[CLERK_WEBHOOK_DB]", error.message);
       return new Response("Database error", { status: 500 });
     }
+    return new Response("User synced", { status: 200 });
+  }
+
+  if (eventType === "user.deleted" && supabaseAdmin && evt.data.id) {
+    const { error } = await supabaseAdmin.from("users").delete().eq("clerk_id", evt.data.id);
+    if (error) {
+      console.error("[CLERK_WEBHOOK_DB_DELETE]", error.message);
+      return new Response("Database error", { status: 500 });
+    }
+    return new Response("User removed", { status: 200 });
   }
 
   return new Response("Webhook processed", { status: 200 });

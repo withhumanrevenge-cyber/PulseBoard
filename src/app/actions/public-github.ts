@@ -150,13 +150,20 @@ export async function getPublicGitHubData(username: string): Promise<PublicGitHu
 
     const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const dayActivity: Record<number, number> = {};
-    let currentStreak = 0;
     const allDays = weeks.flatMap((w) => w.contributionDays).reverse();
-    
+
+    // Aggregate day-of-week activity across the full window first.
     for (const day of allDays) {
       dayActivity[day.weekday] = (dayActivity[day.weekday] || 0) + day.contributionCount;
+    }
+
+    // Streak: contiguous non-zero days from today back. Break on the first
+    // zero-day — the old code skipped leading zeros and credited a streak
+    // that had already ended.
+    let currentStreak = 0;
+    for (const day of allDays) {
       if (day.contributionCount > 0) currentStreak++;
-      else if (currentStreak > 0) break; 
+      else break;
     }
 
     const mostActiveDayIndex = Object.entries(dayActivity).sort((a,b) => b[1] - a[1])[0]?.[0];
