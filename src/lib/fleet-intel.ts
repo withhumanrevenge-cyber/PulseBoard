@@ -1,3 +1,5 @@
+import { DEV_SCORE_MAX } from "@/lib/dev-score";
+
 type FleetNode = {
     totalStars?: number;
     devScore?: { total?: number; consistency?: number };
@@ -12,10 +14,11 @@ export function calculateFleetSynergy(nodes: FleetNode[]) {
     const languages = new Set(nodes.map(n => n.topLanguage));
     const langDiversity = languages.size / nodes.length;
 
-    // consistency is on a 0–20 scale (see dev-score.ts); scale to 0–100 before
-    // averaging with avgScore, which is already 0–100.
+    // consistency is on a 0–DEV_SCORE_MAX.consistency scale; scale to 0–100
+    // before averaging with avgScore, which is already 0–100.
     const avgConsistency100 =
-      (nodes.reduce((acc, curr) => acc + (curr.devScore?.consistency || 0), 0) / nodes.length) * 5;
+      (nodes.reduce((acc, curr) => acc + (curr.devScore?.consistency || 0), 0) / nodes.length) *
+      (100 / DEV_SCORE_MAX.consistency);
 
     let synergy = (avgScore * 0.6) + (avgConsistency100 * 0.4);
 

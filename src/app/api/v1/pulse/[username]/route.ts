@@ -1,15 +1,7 @@
 import { NextResponse } from "next/server";
-import { getPublicGitHubData } from "@/app/actions/public-github";
-// Read privacy through the admin client — the anon client is subject to RLS
-// on `users` and silently returned no rows, so privacy toggles never took
-// effect on this public endpoint.
-import { supabaseAdmin } from "@/lib/supabase";
-
-type PrivacySettings = {
-  hideStars: boolean;
-  hideContributions: boolean;
-  hideTech: boolean;
-};
+import { getPublicGitHubProfile } from "@/lib/github-profile";
+import { getPublicProfileSettings } from "@/lib/public-settings";
+import { ipFromRequest, rateLimit } from "@/lib/rate-limit";
 
 export async function GET(
   request: Request,
@@ -17,8 +9,16 @@ export async function GET(
 ) {
   const { username } = await params;
 
+  const limit = await rateLimit(`api-pulse:${ipFromRequest(request)}`, { limit: 60, windowSec: 60 });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   try {
-    const profile = await getPublicGitHubData(username);
+    const profile = await getPublicGitHubProfile(username);
 
     if (!profile) {
       return NextResponse.json(
@@ -27,55 +27,55 @@ export async function GET(
       );
     }
 
-    let privacy: PrivacySettings = { hideStars: false, hideContributions: false, hideTech: false };
-    if (supabaseAdmin) {
-      const { data, error } = await supabaseAdmin
-        .from("users")
-        .select("hide_stars, hide_contributions, privacy_settings")
-        .eq("username", username)
-        .maybeSingle();
+    const privacy = await getPublicProfileSettings(profile.username);
 
-      if (error) {
-        console.warn("[PULSE_V1_PRIVACY_LOOKUP]", error.message);
-      } else if (data) {
-        // Support both the newer flat columns (hide_stars / hide_contributions,
-        // set via /api/settings) and the older privacy_settings jsonb.
-        const nested = (data.privacy_settings ?? {}) as Partial<PrivacySettings>;
-        privacy = {
-          hideStars: Boolean(data.hide_stars ?? nested.hideStars ?? false),
-          hideContributions: Boolean(data.hide_contributions ?? nested.hideContributions ?? false),
-          hideTech: Boolean(nested.hideTech ?? false),
-        };
-      }
-    }
-
-    // Remove hidden fields based on user privacy choices
+    // Remove hidden fields based on the owner's privacy choices.
     const sanitizedProfile = {
-      username: username,
+      username: profile.username,
       name: profile.name,
       avatar_url: profile.avatarUrl,
-      bio: profile.bio,
+      bio: privacy.bio ?? profile.bio,
+      claimed: privacy.claimed,
+      open_to_work: privacy.openToWork,
+      dev_score: {
+        total: profile.devScore.total,
+        impact: profile.devScore.impact,
+        velocity: profile.devScore.velocity,
+        collaboration: profile.devScore.collaboration,
+        consistency: profile.devScore.consistency,
+        breadth: profile.devScore.breadth,
+        labels: profile.devScore.labels,
+      },
       metrics: {
         stars: privacy.hideStars ? null : profile.totalStars,
         contributions: privacy.hideContributions ? null : profile.contributions,
-        top_tech: privacy.hideTech ? null : profile.topLanguage,
+        top_tech: profile.topLanguage,
+      },
+      proof_of_work: {
+        merged_external_prs: profile.proofOfWork.mergedExternalPRs,
+        external_repos: profile.proofOfWork.externalRepos,
+        top_contributions: profile.proofOfWork.topContributions.map((c) => ({
+          repo: c.repo,
+          url: c.url,
+          stars: c.stars,
+          merged_prs: c.mergedPRs,
+        })),
       },
       repos: profile.repos.map((r) => ({
         name: r.name,
         stars: r.stars,
         language: r.language,
-        url: r.link
+        url: r.link,
       })),
-      verified_at: new Date().toISOString(),
-      protocol: "v1"
+      verified_at: profile.fetchedAt,
+      protocol: "v1",
     };
 
-    return NextResponse.json(sanitizedProfile);
+    return NextResponse.json(sanitizedProfile, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch (error) {
     console.error(`[api_v1_error] ${username}:`, error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

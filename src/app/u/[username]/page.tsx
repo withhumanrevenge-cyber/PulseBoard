@@ -1,38 +1,49 @@
 import { Metadata } from "next";
 import { cache } from "react";
-import { getPublicGitHubData, type PublicGitHubProfile } from "@/app/actions/public-github";
+import { getPublicGitHubProfile } from "@/lib/github-profile";
+import { getPublicProfileSettings } from "@/lib/public-settings";
 import { PublicProfileView } from "@/components/public-profile-view";
 import { Activity } from "lucide-react";
 
 export const revalidate = 300;
 
 // generateMetadata and the page both need the profile — dedupe to one fetch per request.
-const getProfile = cache((username: string) => getPublicGitHubData(username));
+const getProfile = cache((username: string) => getPublicGitHubProfile(username));
 
 interface PageProps {
   params: Promise<{ username: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+function resolveId(username: string) {
+  return username === "demo" ? "levelsio" : username;
+}
+
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { username } = await props.params;
-  const id = username === "demo" ? "levelsio" : username;
-  const profile = await getProfile(id);
+  const profile = await getProfile(resolveId(username));
 
-  if (!profile) return { title: "Profile Not Found | PulseBoard" };
+  if (!profile) return { title: "Profile Not Found | PulseBoard", robots: { index: false } };
+
+  const name = profile.name || profile.username;
+  const pow = profile.proofOfWork;
+  const description =
+    pow.mergedExternalPRs > 0
+      ? `${name} has ${pow.mergedExternalPRs} pull requests merged into ${pow.externalRepos}+ open-source projects. DevScore ${profile.devScore.total}/100 · ${profile.topLanguage}.`
+      : `${name}'s verified developer profile — DevScore ${profile.devScore.total}/100 · ${profile.topLanguage}.`;
 
   return {
-    title: `${profile.name || username} | PulseBoard`,
-    description: `View ${profile.name || username}'s public activity, contributions, and stack.`,
-    openGraph: {
-      images: [profile.avatarUrl],
-    },
+    title: `${name} (@${profile.username}) | PulseBoard`,
+    description,
+    alternates: { canonical: `/u/${profile.username}` },
+    openGraph: { title: `${name} on PulseBoard`, description, type: "profile" },
+    twitter: { card: "summary_large_image", title: `${name} on PulseBoard`, description },
   };
 }
 
 export default async function PublicPage(props: PageProps) {
   const { username } = await props.params;
-  const id = username === "demo" ? "levelsio" : username;
+  const id = resolveId(username);
   const profile = await getProfile(id);
 
   if (!profile) {
@@ -49,13 +60,14 @@ export default async function PublicPage(props: PageProps) {
     );
   }
 
-  const typedProfile = profile as PublicGitHubProfile;
+  const settings = await getPublicProfileSettings(profile.username);
 
   return (
-    <PublicProfileView 
-      username={id} 
-      profile={typedProfile} 
-      repos={typedProfile.repos || []} 
+    <PublicProfileView
+      username={profile.username}
+      profile={profile}
+      repos={profile.repos || []}
+      settings={settings}
     />
   );
 }

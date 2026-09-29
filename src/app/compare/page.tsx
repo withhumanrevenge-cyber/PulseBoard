@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState, Suspense, useMemo } from "react";
 import { getPublicGitHubData } from "@/app/actions/public-github";
 import { motion } from "framer-motion";
-import { Shield, Zap, Star, Activity, ArrowLeftRight, Trophy, TrendingUp } from "lucide-react";
+import { Shield, Zap, Star, Activity, ArrowLeftRight, Trophy, TrendingUp, GitMerge } from "lucide-react";
 import Link from "next/link";
 import { PulseLogo } from "@/components/pulse-logo";
 import { Sparkline } from "@/components/sparkline";
@@ -19,6 +19,7 @@ type ProfileSummary = {
   totalStars?: number;
   contributions?: number;
   streak?: number;
+  mergedExternalPRs?: number;
   devScore: {
     total: number;
     labels?: string[];
@@ -57,6 +58,7 @@ function CompareContent() {
           return { 
             data: {
               ...res,
+              mergedExternalPRs: res.proofOfWork.mergedExternalPRs,
               devScore: {
                 total: res.devScore.total,
                 labels: res.devScore.labels
@@ -187,6 +189,7 @@ function MetricComparison({ data, allProfiles }: { data: ProfileSummary; allProf
         { label: "Contributions", value: data.contributions || 0, max: getMaxValue("contributions"), icon: Activity },
         { label: "Tech Reputation", value: data.devScore.total, max: getMaxValue("devScore"), icon: Shield },
         { label: "Ship Streak", value: data.streak || 0, max: getMaxValue("streak"), icon: TrendingUp },
+        { label: "Merged OSS PRs", value: data.mergedExternalPRs || 0, max: getMaxValue("mergedExternalPRs"), icon: GitMerge },
     ];
 
     return (
@@ -198,7 +201,7 @@ function MetricComparison({ data, allProfiles }: { data: ProfileSummary; allProf
                    <motion.div 
                     key={m.label} 
                     whileHover={{ y: -5 }}
-                    className={`p-6 rounded-xl border transition-all flex flex-col justify-between h-40 ${isLeader ? "bg-card border-foreground/20 shadow-md ring-1 ring-foreground/5" : "bg-muted/20 border-border opacity-60"}`}
+                    className={`p-6 rounded-xl border transition-all flex flex-col justify-between h-40 last:col-span-2 ${isLeader ? "bg-card border-foreground/20 shadow-md ring-1 ring-foreground/5" : "bg-muted/20 border-border opacity-60"}`}
                    >
                       <div className="flex items-center justify-between">
                         <div className={`p-2 rounded-md ${isLeader ? "bg-foreground/5 text-foreground" : "bg-muted text-muted-foreground"}`}>

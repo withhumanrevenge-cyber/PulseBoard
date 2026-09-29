@@ -4,6 +4,10 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/explore(.*)",
   "/u/(.*)",
+  // Shared shortlists are sent to people who may not have an account yet.
+  "/fleet/share(.*)",
+  "/robots.txt",
+  "/sitemap.xml",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/public/(.*)",
