@@ -2,14 +2,19 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-type SettingsPayload = {
-  hide_stars: boolean;
-  hide_contributions: boolean;
-  is_open_to_build: boolean;
-  bio: string;
-  linkedin: string;
-  twitter: string;
-};
+// Social fields are stored as bare handles and rendered as links on public
+// profiles, so reject anything that is not a plain handle (no URLs/schemes).
+const HANDLE = /^[A-Za-z0-9_.-]{0,100}$/;
+
+function handle(value: unknown): string | null {
+  if (typeof value !== "string") return "";
+  const cleaned = value
+    .trim()
+    .replace(/^@/, "")
+    .replace(/^https?:\/\/(www\.)?(linkedin\.com\/in\/|x\.com\/|twitter\.com\/)/i, "")
+    .replace(/\/+$/, "");
+  return HANDLE.test(cleaned) ? cleaned : null;
+}
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -26,25 +31,36 @@ export async function POST(req: Request) {
     );
   }
 
+  let body: Record<string, unknown>;
   try {
-    const body = (await req.json()) as SettingsPayload;
+    body = (await req.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
+  const linkedin = handle(body.linkedin);
+  const twitter = handle(body.twitter);
+  if (linkedin === null || twitter === null) {
+    return NextResponse.json({ error: "Social links must be plain handles." }, { status: 400 });
+  }
+
+  try {
     const { data, error } = await supabaseAdmin
       .from("users")
       .upsert(
         {
           clerk_id: userId,
-          hide_stars: body.hide_stars,
-          hide_contributions: body.hide_contributions,
-          is_open_to_build: body.is_open_to_build,
-          bio: body.bio,
-          linkedin: body.linkedin,
-          twitter: body.twitter,
+          hide_stars: body.hide_stars === true,
+          hide_contributions: body.hide_contributions === true,
+          is_open_to_build: body.is_open_to_build === true,
+          bio: typeof body.bio === "string" ? body.bio.slice(0, 280) : "",
+          linkedin,
+          twitter,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "clerk_id" }
       )
-      .select();
+      .select("hide_stars, hide_contributions, is_open_to_build, bio, linkedin, twitter");
 
     if (error) throw error;
 
@@ -52,6 +68,6 @@ export async function POST(req: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[SETTINGS_POST]", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Could not save settings" }, { status: 500 });
   }
 }

@@ -1,38 +1,44 @@
-import { getPublicGitHubData } from "@/app/actions/public-github";
+import { getPublicGitHubProfile } from "@/lib/github-profile";
+
+// README badge: `![PulseBoard](https://<host>/api/v1/badge/<login>)`.
+// Shows DevScore (not stars) so it respects the owner's "hide stars" setting and
+// every embed links back to a profile — this is the product's main growth loop.
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ username: string }> }
 ) {
   const { username } = await params;
 
   try {
-    const profile = await getPublicGitHubData(username);
+    const profile = await getPublicGitHubProfile(username);
     if (!profile) return new Response("User not found", { status: 404 });
 
-    const stars = profile.totalStars?.toLocaleString() || "0";
-    
-    const svg = `
-      <svg width="220" height="32" viewBox="0 0 220 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="220" height="32" rx="16" fill="#000000"/>
-        <rect x="1" y="1" width="218" height="30" rx="15" stroke="#FFFFFF" stroke-opacity="0.1"/>
-        <defs>
-          <linearGradient id="pulse-grad" x1="0" y1="0" x2="220" y2="0" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#7C3AED"/>
-            <stop offset="1" stop-color="#3B82F6"/>
-          </linearGradient>
-        </defs>
-        <path d="M15 16H20L22 10L25 22L27 16H32" stroke="url(#pulse-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <text x="40" y="20" fill="white" font-family="Inter, sans-serif" font-weight="bold" font-size="10" letter-spacing="0.02em">PULSEBOARD</text>
-        <text x="120" y="20" fill="#9CA3AF" font-family="Inter, sans-serif" font-size="10">STARS</text>
-        <text x="150" y="20" fill="white" font-family="Inter, sans-serif" font-weight="bold" font-size="10">${stars}</text>
-        <circle cx="205" cy="16" r="3" fill="#10B981" />
-      </svg>
-    `;
+    const score = String(profile.devScore.total);
+    const prs = profile.proofOfWork.mergedExternalPRs;
+    const right = prs > 0 ? `${score} · ${prs} OSS PRs` : score;
+    const rightWidth = 14 + right.length * 6.5;
+    const width = Math.round(122 + rightWidth);
+
+    const svg = `<svg width="${width}" height="28" viewBox="0 0 ${width} 28" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PulseBoard DevScore ${score}">
+  <title>PulseBoard DevScore ${score}</title>
+  <defs>
+    <linearGradient id="pulse-grad" x1="0" y1="0" x2="${width}" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+  </defs>
+  <rect width="${width}" height="28" rx="6" fill="#0A0A0A"/>
+  <rect x="116" width="${width - 116}" height="28" rx="6" fill="url(#pulse-grad)"/>
+  <rect x="116" width="8" height="28" fill="url(#pulse-grad)"/>
+  <path d="M10 14H14L16 8L19 20L21 14H25" stroke="url(#pulse-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="32" y="18" fill="#FFFFFF" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-weight="700" font-size="11">DevScore</text>
+  <text x="${116 + 10}" y="18" fill="#FFFFFF" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-weight="700" font-size="11">${right}</text>
+</svg>`;
 
     return new Response(svg, {
       headers: {
         "Content-Type": "image/svg+xml",
-        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=1800",
+        "Cache-Control": "public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400",
       },
     });
   } catch (error) {

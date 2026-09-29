@@ -27,6 +27,18 @@ PulseBoard is built with a focus on **deterministic physics** and **sub-100ms la
 
 ## 🚀 Core Features
 
+### 🧾 Proof of Work
+Every profile shows pull requests **merged into repositories the developer does not own**. Another maintainer reviewed that code, so it can't be self-reported the way stars or commit counts can. Contributions are grouped by project and ranked by the project's reach. They feed the Collaboration component of DevScore.
+
+### 📐 DevScore v2 (0–100)
+Impact (stars, 30) + Velocity (contributions, 25) + Collaboration (merged external PRs, 20) + Consistency (15) + Breadth (10). The breakdown is shown on every profile. See `src/lib/dev-score.ts`.
+
+### ✅ Claimed profiles
+Developers claim their profile by signing in with GitHub. Owners control privacy (hide stars/contributions), add a bio and links, and can opt in to "open to opportunities". Settings are keyed on the OAuth-verified `github_login`, so they can't be spoofed through a Clerk username.
+
+### 🔗 Share, badge & social cards
+Share → copy the profile link or a README badge (`/api/v1/badge/<login>`). Profile links render a generated social card (`/u/<login>/opengraph-image`).
+
 ### 📡 Verified Global Directory
 A real-time search node for identifying high-impact developers. Filter by primary stack, consistency index, and total impact stars.
 
@@ -67,17 +79,36 @@ Create a `.env.local` file based on the provided `.env.example`:
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Anonymous Client Key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Admin Key (Server-only) |
-| `GITHUB_TOKEN` | Public GitHub Telemetry Token |
+| `CLERK_WEBHOOK_SECRET` | Clerk webhook signing secret (`/api/webhooks/clerk`) |
+| `GITHUB_TOKEN` | Read-only token for public GitHub data. See **GitHub token** below. |
 | `GROQ_API_KEY` | PulseAI model key — free at [console.groq.com/keys](https://console.groq.com/keys). If unset, PulseAI shows a setup state instead of crashing. |
-| `GROQ_MODEL` | _(optional)_ Defaults to `llama-3.3-70b-versatile`. |
+| `GROQ_MODEL` | _(optional)_ Defaults to `openai/gpt-oss-120b`. |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiting across instances. Strongly recommended in production. |
+| `NEXT_PUBLIC_APP_URL` | Public URL for canonical links, sitemap, and social cards. |
 
-### 3. (Optional) Enable pgvector
-Run `supabase/migrations/0001_talent_vectors.sql` in the Supabase SQL editor to add the `embedding` column, an IVFFlat index, and the `match_talents` RPC. The app works without it (in-memory cosine fallback).
+#### GitHub token
+The server only **reads public data**, so the token needs no permissions:
+- **Fine-grained token (recommended):** GitHub → Settings → Developer settings → Fine-grained tokens → *Repository access: Public repositories (read-only)*. Leave all account and repository permissions at *No access*. Expiry of up to 1 year.
+- **Classic token:** leave **every scope unticked**.
+
+Private contribution data on the dashboard comes from each user's own GitHub OAuth token through Clerk, not from this token.
+
+### 3. Database
+Run the migrations in order in the Supabase SQL editor (or `supabase db push`). All of them are idempotent:
+1. `0000_base_schema.sql` creates the `users` and `talents` tables.
+2. `0001_talent_vectors.sql` adds pgvector search (optional; the app falls back to in-memory cosine).
+3. `0002_claims_proof_of_work_rls.sql` adds profile claims, proof-of-work ranking, and row-level security.
 
 ### 4. Development Mode
 ```bash
 npm run dev
 ```
+
+### 5. Checks
+```bash
+npm run typecheck && npm run lint && npm test
+```
+CI (`.github/workflows/ci.yml`) runs the same checks on every push and PR.
 
 ---
 
@@ -93,6 +124,12 @@ For production scaling, it is recommended to transition from a Personal Access T
 The `talents` table in Supabase serves as the single source of truth for the Global Directory. Ensure your `SUPABASE_SERVICE_ROLE_KEY` is kept strictly on the server-side to prevent unauthorized registry mutations.
 
 ---
+
+### Rate limits & caching
+GitHub profile fetches are cached per user for 10 minutes (`src/lib/github-profile.ts`). PulseAI, search, the public API, and the deploy checker are rate limited (`src/lib/rate-limit.ts`). Configure Upstash so limits hold across serverless instances.
+
+### Product strategy
+See [`docs/STRATEGY.md`](docs/STRATEGY.md) for positioning, the growth loops, the launch plan, and the production checklist.
 
 ## 📄 License
 MIT © PulseBoard Engineering

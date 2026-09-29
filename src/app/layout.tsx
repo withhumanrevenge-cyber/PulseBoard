@@ -24,8 +24,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PulseBoard | Developer Reputation Platform",
-  description: "Connect your stack and publish a verified developer profile that updates as you ship.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  title: "PulseBoard | Proof-of-work developer profiles",
+  description:
+    "Verified developer profiles built from code other maintainers merged — not self-reported resumes. Find, compare, and shortlist engineers by real shipped work.",
+  openGraph: { siteName: "PulseBoard", type: "website" },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

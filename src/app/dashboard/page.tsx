@@ -3,7 +3,7 @@
 import { useUser, SignOutButton, useClerk } from "@clerk/nextjs";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Activity, Star, GitCommit, Code, Share2, LogOut, RefreshCcw, ExternalLink, Github, ArrowRight, Shield, Settings, X, User, Key, ChevronRight, ChevronLeft, ShieldAlert, Rocket, GitBranch, Zap, Twitter, Linkedin } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getGitHubStats, GitHubMetrics } from "@/app/actions/github";
 import { getSettings } from "@/app/actions/privacy";
 import { Sparkline } from "@/components/sparkline";
@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [settings, setSettings] = useState<UserSettings>({
     hide_stars: false,
     hide_contributions: false,
-    is_open_to_build: true,
+    is_open_to_build: false,
     bio: "",
     linkedin: "",
     twitter: ""
@@ -85,17 +85,27 @@ export default function DashboardPage() {
       setSyncing(false);
     }
   };
-  const handleSaveSettings = async (newSettings: UserSettings) => {
+  // Public profiles live at the GitHub login; Clerk's username/id is not a valid handle.
+  const profileHandle = data?.username || user?.username || "";
+
+  // Toggles save immediately; text fields call this on every keystroke, so debounce
+  // them into one request after the user pauses typing.
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleSaveSettings = (newSettings: UserSettings, debounceMs = 0) => {
     setSettings(newSettings);
-    try {
-      await fetch("/api/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSettings)
-      });
-    } catch (err) {
-      console.error("Save failed:", err);
-    }
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newSettings)
+        });
+        if (!res.ok) console.error("Save failed:", (await res.json().catch(() => null))?.error ?? res.status);
+      } catch (err) {
+        console.error("Save failed:", err);
+      }
+    }, debounceMs);
   };
 
   const cards = [
@@ -162,7 +172,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => {
-                const url = typeof window !== 'undefined' ? `${window.location.origin}/u/${user?.username || user?.id}` : "";
+                const url = typeof window !== 'undefined' ? `${window.location.origin}/u/${profileHandle}` : "";
                 if (url) navigator.clipboard.writeText(url);
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
@@ -328,7 +338,7 @@ export default function DashboardPage() {
           <motion.div key="floating-dock" initial={{ y: 100, x: "-50%", opacity: 0 }} animate={{ y: 0, x: "-50%", opacity: 1 }} exit={{ y: 100, x: "-50%", opacity: 0 }} className="fixed bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-1.5 md:gap-3 glass-card p-2 md:p-3 rounded-full border border-border/40 shadow-2xl backdrop-blur-xl max-w-[calc(100vw-2rem)]">
             <button onClick={handleSync} disabled={syncing} className="p-3 md:p-4 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-all text-primary"><RefreshCcw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} /></button>
             <div className="h-8 w-px bg-border/60" />
-            <button onClick={() => window.open(`/u/${user?.username || user?.id}`, '_blank')} className="px-5 md:px-8 py-3 md:py-4 rounded-full bg-foreground text-background text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all outline-none whitespace-nowrap"><Rocket className="w-4 h-4" />Open profile</button>
+            <button onClick={() => window.open(`/u/${profileHandle}`, '_blank')} className="px-5 md:px-8 py-3 md:py-4 rounded-full bg-foreground text-background text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all outline-none whitespace-nowrap"><Rocket className="w-4 h-4" />Open profile</button>
             <div className="h-8 w-px bg-border/60" /><button onClick={() => setIsSettingsOpen(true)} className="p-3 md:p-4 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-all"><Settings className="w-5 h-5 text-muted-foreground" /></button>
           </motion.div>
         )}
@@ -353,14 +363,14 @@ export default function DashboardPage() {
                      <motion.div key="main-panel" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12 pb-16">
                         <div className="space-y-6">
                             <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Bio</label>
-                            <textarea value={settings.bio || ""} onChange={(e) => handleSaveSettings({ ...settings, bio: e.target.value })} placeholder="Short bio" className="w-full bg-muted/40 border border-border/50 rounded-[1.5rem] p-6 text-sm font-normal outline-none focus:border-primary/50 transition-all h-28 resize-none shadow-inner" />
+                            <textarea value={settings.bio || ""} onChange={(e) => handleSaveSettings({ ...settings, bio: e.target.value }, 600)} placeholder="Short bio" className="w-full bg-muted/40 border border-border/50 rounded-[1.5rem] p-6 text-sm font-normal outline-none focus:border-primary/50 transition-all h-28 resize-none shadow-inner" />
                         </div>
 
                         <div className="space-y-6">
                             <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Social links</label>
                             <div className="grid grid-cols-1 gap-3">
-                                <div className="relative group"><Twitter className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" /><input type="text" placeholder="@twitter" value={settings.twitter || ""} onChange={(e) => handleSaveSettings({ ...settings, twitter: e.target.value })} className="w-full bg-muted/40 border border-border/50 rounded-full py-3.5 pl-12 pr-6 text-[11px] font-bold outline-none focus:border-primary/50 transition-all" /></div>
-                                <div className="relative group"><Linkedin className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" /><input type="text" placeholder="linkedin-id" value={settings.linkedin || ""} onChange={(e) => handleSaveSettings({ ...settings, linkedin: e.target.value })} className="w-full bg-muted/40 border border-border/50 rounded-full py-3.5 pl-12 pr-6 text-[11px] font-bold outline-none focus:border-primary/50 transition-all" /></div>
+                                <div className="relative group"><Twitter className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" /><input type="text" placeholder="@twitter" value={settings.twitter || ""} onChange={(e) => handleSaveSettings({ ...settings, twitter: e.target.value }, 600)} className="w-full bg-muted/40 border border-border/50 rounded-full py-3.5 pl-12 pr-6 text-[11px] font-bold outline-none focus:border-primary/50 transition-all" /></div>
+                                <div className="relative group"><Linkedin className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" /><input type="text" placeholder="linkedin-id" value={settings.linkedin || ""} onChange={(e) => handleSaveSettings({ ...settings, linkedin: e.target.value }, 600)} className="w-full bg-muted/40 border border-border/50 rounded-full py-3.5 pl-12 pr-6 text-[11px] font-bold outline-none focus:border-primary/50 transition-all" /></div>
                             </div>
                         </div>
 

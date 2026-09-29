@@ -6,7 +6,7 @@ import { supabase, supabaseAdmin } from "@/lib/supabase";
 const DEFAULT_SETTINGS = {
   hide_stars: false,
   hide_contributions: false,
-  is_open_to_build: true,
+  is_open_to_build: false,
   bio: "",
   linkedin: "",
   twitter: "",

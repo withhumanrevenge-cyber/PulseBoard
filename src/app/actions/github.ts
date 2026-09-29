@@ -2,7 +2,9 @@
 
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
+import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
+import { normalizeGitHubLogin } from "@/lib/github-username";
 
 export interface GitHubRepo {
   name: string;
@@ -165,14 +167,23 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
     };
 
     if (supabaseAdmin) {
-      await supabaseAdmin.from("users").upsert({
+      const row = {
         clerk_id: userId,
         username,
         avatar_url: metrics.avatarUrl,
         total_stars: metrics.totalStars,
         contribution_count: metrics.contributionCount,
         last_synced_at: new Date().toISOString()
-      }, { onConflict: "clerk_id" });
+      };
+      // Verified: `username` here came from the owner's own OAuth token.
+      // Public-profile settings are keyed on github_login, never on Clerk's username.
+      const { error } = await supabaseAdmin
+        .from("users")
+        .upsert({ ...row, github_login: username }, { onConflict: "clerk_id" });
+      if (error) {
+        console.warn("[USER_SYNC]", error.message, "— apply supabase/migrations/0002 to enable profile claims.");
+        await supabaseAdmin.from("users").upsert(row, { onConflict: "clerk_id" });
+      }
     }
 
     return metrics;
@@ -182,50 +193,66 @@ export async function getGitHubStats(): Promise<GitHubMetrics | null> {
   }
 }
 
+const EMPTY_WEEKS = [0, 0, 0, 0, 0, 0, 0];
+
 export async function getWeeklyContributions(username: string): Promise<number[]> {
+  const login = normalizeGitHubLogin(username);
+  if (!login) return EMPTY_WEEKS;
   try {
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-    const response = await octokit.graphql<ContributionsResponse>(`
-      query($login: String!) {
-        user(login: $login) {
-          contributionsCollection {
-            contributionCalendar {
-              weeks {
-                 contributionDays {
-                    contributionCount
-                 }
-              }
+    return await unstable_cache(() => fetchWeeklyContributions(login), ["gh-weekly", login.toLowerCase()], {
+      revalidate: 600,
+    })();
+  } catch {
+    return EMPTY_WEEKS;
+  }
+}
+
+async function fetchWeeklyContributions(username: string): Promise<number[]> {
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN });
+  const response = await octokit.graphql<ContributionsResponse>(`
+    query($login: String!) {
+      user(login: $login) {
+        contributionsCollection {
+          contributionCalendar {
+            weeks {
+               contributionDays {
+                  contributionCount
+               }
             }
           }
         }
       }
-    `, { login: username });
+    }
+  `, { login: username });
 
-    return response.user?.contributionsCollection?.contributionCalendar?.weeks
-      ?.slice(-7)
-      .map((w) => w.contributionDays.reduce((acc, d) => acc + d.contributionCount, 0)) || [0, 0, 0, 0, 0, 0, 0];
-  } catch {
-    return [0, 0, 0, 0, 0, 0, 0];
-  }
+  return response.user?.contributionsCollection?.contributionCalendar?.weeks
+    ?.slice(-7)
+    .map((w) => w.contributionDays.reduce((acc, d) => acc + d.contributionCount, 0)) || EMPTY_WEEKS;
 }
+
 export async function getTopGithubUsers() {
   try {
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-    const { data } = await octokit.rest.search.users({
-      q: "followers:>1000",
-      sort: "followers",
-      order: "desc",
-      per_page: 10,
-    });
-    
-    return data.items.map(user => ({
-      username: user.login,
-      avatarUrl: user.avatar_url,
-      profileUrl: user.html_url,
-      type: user.type
-    }));
+    // Failures throw out of the cache so an outage is not cached for a day.
+    return await unstable_cache(fetchTopGithubUsers, ["gh-top-users"], { revalidate: 86400 })();
   } catch (error) {
-    console.error("[TOP_GITHUB_USERS_ERROR]", error);
+    console.error("[TOP_GITHUB_USERS_ERROR]", error instanceof Error ? error.message : error);
     return [];
   }
+}
+
+async function fetchTopGithubUsers() {
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN });
+  const { data } = await octokit.rest.search.users({
+    q: "followers:>1000",
+    sort: "followers",
+    order: "desc",
+    per_page: 10,
+  });
+  
+  return data.items.map(user => ({
+    username: user.login,
+    avatarUrl: user.avatar_url,
+    profileUrl: user.html_url,
+    type: user.type
+  }));
 }

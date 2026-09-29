@@ -8,7 +8,9 @@ import {
 } from "@/lib/groq";
 import { searchDevelopers, type ScoredDeveloper } from "@/lib/vector-store";
 import { searchGitHubDevelopers } from "@/lib/dev-search";
-import { getPublicGitHubData } from "@/app/actions/public-github";
+import { getPublicGitHubProfile } from "@/lib/github-profile";
+import { auth } from "@clerk/nextjs/server";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export interface PulseSource {
   username: string;
@@ -43,7 +45,8 @@ Hard rules:
 - If a tool returns nothing, say so plainly and suggest a refinement. Do not fabricate profiles.
 - Refer to developers by their GitHub handle with an @ prefix.
 - Be concise and skimmable. Lead with the answer. Use short paragraphs or tight bullet lists. No emojis.
-- DevScore is 0–100 (impact + velocity + consistency + breadth). Explain metrics in plain language when relevant.`;
+- DevScore is 0–100: impact (stars, 30) + velocity (contributions, 25) + collaboration (PRs merged into other people's repos, 20) + consistency (15) + breadth (10). Explain metrics in plain language when relevant.
+- When assessing someone for hiring or collaboration, weight merged external PRs (code other maintainers reviewed and accepted) above stars or raw contribution counts, and cite the specific repos.`;
 
 const TOOLS: ToolDefinition[] = [
   {
@@ -159,7 +162,7 @@ async function runTool(
   if (name === "analyze_developer") {
     const username = String(args.username ?? "").trim().replace(/^@/, "");
     if (!username) return JSON.stringify({ error: "missing username" });
-    const p = await getPublicGitHubData(username);
+    const p = await getPublicGitHubProfile(username);
     if (!p) return JSON.stringify({ error: `no public GitHub data for ${username}` });
     collected.set(p.username, {
       username: p.username,
@@ -181,6 +184,13 @@ async function runTool(
       languages: p.languageMap.map((l) => `${l.name} ${l.percentage}%`),
       devScore: p.devScore,
       mostActiveDay: p.mostActiveDay,
+      // Strongest hiring signal: code other maintainers reviewed and merged.
+      mergedExternalPRs: p.proofOfWork.mergedExternalPRs,
+      externalContributions: p.proofOfWork.topContributions.map((c) => ({
+        repo: c.repo,
+        stars: c.stars,
+        mergedPRs: c.mergedPRs,
+      })),
       topRepos: p.repos.slice(0, 5).map((r) => ({
         name: r.name,
         stars: r.stars,
@@ -212,14 +222,35 @@ export async function askPulseAI(
     return { ok: false, message: "", sources: [], error: "not_configured" };
   }
 
-  const trimmedPrompt = prompt.trim();
+  const trimmedPrompt = prompt.trim().slice(0, 2000);
   if (!trimmedPrompt) {
     return { ok: false, message: "Ask me to find or analyze a developer.", sources: [] };
   }
 
+  // Every call costs model tokens and GitHub quota — cap per user (or IP if signed out).
+  const { userId } = await auth();
+  const limit = await rateLimit(`pulse-ai:${userId ?? await clientIp()}`, {
+    limit: userId ? 40 : 10,
+    windowSec: 600,
+  });
+  if (!limit.ok) {
+    return {
+      ok: false,
+      message: userId
+        ? "You've hit the PulseAI limit for now. Try again in a few minutes."
+        : "You've hit the guest limit for PulseAI. Sign in to keep scouting.",
+      sources: [],
+      error: "failed",
+    };
+  }
+
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
-    ...history.slice(-8).map((h) => ({ role: h.role, content: h.content })),
+    // History arrives from the client: only user/assistant turns, bounded size.
+    ...history
+      .filter((h) => h && (h.role === "user" || h.role === "assistant") && typeof h.content === "string")
+      .slice(-8)
+      .map((h) => ({ role: h.role, content: h.content.slice(0, 4000) })),
     { role: "user", content: trimmedPrompt },
   ];
 
